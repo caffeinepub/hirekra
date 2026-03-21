@@ -285,10 +285,13 @@ function About() {
 
           <div className="max-w-3xl mx-auto text-center mb-14">
             <p className="text-muted-foreground leading-relaxed text-base">
-              HireKra was founded with a singular mission — to bridge the gap
-              between exceptional talent and forward-looking organizations. We
-              bring speed, precision, and deep industry knowledge to every
-              hiring engagement, enabling businesses to scale with confidence.
+              HireKra is a fast-growing talent acquisition firm helping
+              businesses scale with the right talent across India and the Middle
+              East.
+            </p>
+            <p className="text-muted-foreground leading-relaxed text-base mt-4">
+              We specialize in Non-IT Contract And Permanent Staffing, Niche
+              Hiring and bulk hiring solutions with speed and precision.
             </p>
           </div>
 
@@ -553,6 +556,145 @@ function Expertise() {
   );
 }
 
+// --- Hiring Process ---
+function HiringProcess() {
+  const ref = useFadeIn();
+
+  const steps = [
+    {
+      number: "01",
+      title: "Requirement Understanding",
+      desc: "We begin with an in-depth consultation to fully understand your hiring goals, team culture, and role specifications.",
+      icon: <MessageSquare size={22} />,
+    },
+    {
+      number: "02",
+      title: "Talent Sourcing",
+      desc: "Leveraging our extensive network and targeted search strategies to identify the best-fit candidates quickly.",
+      icon: <Users size={22} />,
+    },
+    {
+      number: "03",
+      title: "Screening & Shortlisting",
+      desc: "Rigorous evaluation of candidates through profile reviews, skill assessments, and preliminary interviews.",
+      icon: <UserCheck size={22} />,
+    },
+    {
+      number: "04",
+      title: "Interview Coordination",
+      desc: "Seamless scheduling and coordination of interviews between candidates and your hiring team.",
+      icon: <CheckCircle size={22} />,
+    },
+    {
+      number: "05",
+      title: "Offer & Closure",
+      desc: "Expert negotiation support and end-to-end offer management to ensure a smooth and successful closure.",
+      icon: <Award size={22} />,
+    },
+  ];
+
+  return (
+    <section id="process" className="py-20 bg-muted/50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div ref={ref} className="section-fade-in">
+          <SectionHeader
+            badge="How We Work"
+            title="Our Hiring Process"
+            subtitle="A streamlined, transparent, and proven 5-step process to get you the right hire — every time."
+          />
+
+          {/* Desktop: horizontal stepper */}
+          <div className="hidden md:block">
+            <div className="relative">
+              {/* Connector line */}
+              <div
+                className="absolute top-10 left-0 right-0 h-0.5 mx-16"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #1E6FA8 0%, #60C3F5 100%)",
+                  zIndex: 0,
+                }}
+              />
+              <div className="grid grid-cols-5 gap-4 relative z-10">
+                {steps.map((step, i) => (
+                  <div
+                    key={step.number}
+                    className="flex flex-col items-center text-center"
+                  >
+                    {/* Circle */}
+                    <div
+                      className="w-20 h-20 rounded-full flex items-center justify-center mb-5 shadow-lg"
+                      style={{
+                        background:
+                          i === 0
+                            ? "linear-gradient(135deg, #0A2E45, #1E6FA8)"
+                            : "white",
+                        border: i !== 0 ? "2px solid #1E6FA8" : "none",
+                        color: i === 0 ? "white" : "#1E6FA8",
+                      }}
+                    >
+                      {step.icon}
+                    </div>
+                    <span
+                      className="text-xs font-bold mb-1"
+                      style={{ color: "#1E6FA8" }}
+                    >
+                      STEP {step.number}
+                    </span>
+                    <h3 className="font-bold text-sm text-foreground mb-2 leading-snug">
+                      {step.title}
+                    </h3>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      {step.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile: vertical list */}
+          <div className="md:hidden flex flex-col gap-4">
+            {steps.map((step, i) => (
+              <div
+                key={step.number}
+                className="flex gap-4 bg-card border border-border rounded-2xl p-6 shadow-card"
+              >
+                {/* Left: number + line */}
+                <div className="flex flex-col items-center shrink-0">
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow"
+                    style={{
+                      background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                    }}
+                  >
+                    {step.number}
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div
+                      className="w-0.5 flex-1 mt-2 min-h-6"
+                      style={{ background: "#1E6FA8", opacity: 0.3 }}
+                    />
+                  )}
+                </div>
+                {/* Content */}
+                <div className="pt-1">
+                  <h3 className="font-bold text-sm text-foreground mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    {step.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // --- Leadership ---
 function Leadership() {
   const ref = useFadeIn();
@@ -575,7 +717,7 @@ function Leadership() {
   ];
 
   return (
-    <section id="leadership" className="py-20 bg-muted/50">
+    <section id="leadership" className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div ref={ref} className="section-fade-in">
           <SectionHeader
@@ -936,6 +1078,7 @@ function Footer() {
                 ["About Us", "#about"],
                 ["Our Presence", "#presence"],
                 ["Expertise", "#expertise"],
+                ["Our Process", "#process"],
                 ["Leadership", "#leadership"],
                 ["Contact", "#contact"],
               ].map(([label, href]) => (
@@ -1033,6 +1176,7 @@ export default function App() {
         <About />
         <Presence />
         <Expertise />
+        <HiringProcess />
         <Leadership />
         <WhyChoose />
         <Contact />
