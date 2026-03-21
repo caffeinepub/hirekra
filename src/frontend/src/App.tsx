@@ -13,11 +13,14 @@ import {
   Globe,
   Handshake,
   Linkedin,
+  Lock,
+  LogOut,
   Mail,
   MapPin,
   Menu,
   MessageSquare,
   Phone,
+  RefreshCw,
   Settings,
   Shield,
   Star,
@@ -30,6 +33,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import type { Submission } from "./backend";
+import { createActorWithConfig } from "./config";
 
 // --- Scroll animation hook ---
 function useFadeIn() {
@@ -50,6 +55,386 @@ function useFadeIn() {
     return () => obs.disconnect();
   }, []);
   return ref;
+}
+
+// --- Admin Dashboard ---
+function AdminDashboard() {
+  const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const actor = await createActorWithConfig();
+      const data = await actor.getAllSubmissions(password);
+      setSubmissions(data);
+      setAuthenticated(true);
+    } catch {
+      setError("Incorrect password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      const actor = await createActorWithConfig();
+      const data = await actor.getAllSubmissions(password);
+      setSubmissions(data);
+    } catch {
+      toast.error("Failed to refresh submissions.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    setPassword("");
+    setSubmissions([]);
+    setError("");
+  };
+
+  const formatDate = (timestamp: bigint) => {
+    const ms = Number(timestamp) / 1_000_000;
+    return new Date(ms).toLocaleString();
+  };
+
+  if (!authenticated) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{
+          background:
+            "linear-gradient(135deg, #0A2E45 0%, #0B3D5C 40%, #1E4D7A 70%, #1E6FA8 100%)",
+        }}
+      >
+        <Toaster position="top-center" richColors />
+        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm">
+          <div className="flex flex-col items-center mb-8">
+            <img
+              src="/assets/uploads/IMG_0928-1.jpeg"
+              alt="HireKra Logo"
+              className="h-16 w-16 rounded-full object-cover mb-4 shadow-md"
+            />
+            <h1 className="text-2xl font-extrabold text-[#0A2E45]">
+              Hire<span className="text-[#1E6FA8]">Kra</span>
+            </h1>
+            <h2 className="text-lg font-bold text-gray-700 mt-1">
+              Admin Dashboard
+            </h2>
+            <p className="text-sm text-gray-500 mt-1 text-center">
+              Enter your password to view partner form submissions.
+            </p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label
+                htmlFor="admin-password"
+                className="text-sm font-semibold text-gray-700 mb-1.5 block"
+              >
+                Password
+              </Label>
+              <div className="relative">
+                <Lock
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <Input
+                  id="admin-password"
+                  data-ocid="admin.input"
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-9 rounded-xl"
+                  required
+                />
+              </div>
+              {error && (
+                <p
+                  data-ocid="admin.error_state"
+                  className="text-red-500 text-xs mt-2"
+                >
+                  {error}
+                </p>
+              )}
+            </div>
+            <Button
+              data-ocid="admin.submit_button"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#0A2E45] hover:bg-[#0B3D5C] text-white rounded-full py-5 font-bold"
+            >
+              {loading ? "Signing in..." : "Login"}
+            </Button>
+          </form>
+          <div className="mt-6 text-center">
+            <a
+              href="/"
+              className="text-xs text-gray-400 hover:text-[#1E6FA8] transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.hash = "";
+              }}
+            >
+              ← Back to website
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Toaster position="top-center" richColors />
+      {/* Header */}
+      <header
+        className="sticky top-0 z-50 shadow-md"
+        style={{
+          background: "linear-gradient(135deg, #0A2E45 0%, #1E6FA8 100%)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src="/assets/uploads/IMG_0928-1.jpeg"
+              alt="HireKra Logo"
+              className="h-9 w-9 rounded-full object-cover"
+            />
+            <div>
+              <span className="text-white font-extrabold text-lg">
+                Hire<span className="text-[#60C3F5]">Kra</span>
+              </span>
+              <span className="text-white/60 text-sm ml-2">Admin</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              data-ocid="admin.secondary_button"
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 rounded-full"
+            >
+              <RefreshCw
+                size={14}
+                className={`mr-1.5 ${loading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <Button
+              data-ocid="admin.secondary_button"
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 rounded-full"
+            >
+              <LogOut size={14} className="mr-1.5" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        {/* Stats */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-extrabold text-[#0A2E45] mb-1">
+            Partner Form Submissions
+          </h2>
+          <p className="text-gray-500 text-sm">
+            {submissions.length}{" "}
+            {submissions.length === 1 ? "submission" : "submissions"} received
+          </p>
+        </div>
+
+        {loading ? (
+          <div
+            data-ocid="admin.loading_state"
+            className="flex items-center justify-center py-24"
+          >
+            <RefreshCw size={28} className="animate-spin text-[#1E6FA8]" />
+          </div>
+        ) : submissions.length === 0 ? (
+          <div
+            data-ocid="admin.empty_state"
+            className="flex flex-col items-center justify-center py-24 text-center"
+          >
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+              style={{
+                background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+              }}
+            >
+              <Mail size={32} className="text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-[#0A2E45] mb-2">
+              No submissions yet
+            </h3>
+            <p className="text-gray-500 text-sm max-w-xs">
+              When clients fill out the "Partner With Us" form, their details
+              will appear here.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <table data-ocid="admin.table" className="w-full">
+                <thead>
+                  <tr
+                    style={{
+                      background: "linear-gradient(135deg, #0A2E45, #1E4D7A)",
+                    }}
+                  >
+                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                      Company
+                    </th>
+                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                      Hiring Needs
+                    </th>
+                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                      Date &amp; Time
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {submissions.map((sub, i) => (
+                    <tr
+                      key={String(sub.id)}
+                      data-ocid={`admin.row.item.${i + 1}`}
+                      className="hover:bg-blue-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-400">
+                        {i + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                            }}
+                          >
+                            {sub.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-semibold text-gray-800 text-sm">
+                            {sub.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <a
+                          href={`mailto:${sub.email}`}
+                          className="text-[#1E6FA8] hover:underline text-sm"
+                        >
+                          {sub.email}
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                        {sub.company || (
+                          <span className="text-gray-400 italic">
+                            Not provided
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-700 max-w-xs line-clamp-2">
+                          {sub.hiringNeeds}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {formatDate(sub.timestamp)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden flex flex-col gap-4">
+              {submissions.map((sub, i) => (
+                <div
+                  key={String(sub.id)}
+                  data-ocid={`admin.row.item.${i + 1}`}
+                  className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                        }}
+                      >
+                        {sub.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-800">{sub.name}</p>
+                        <a
+                          href={`mailto:${sub.email}`}
+                          className="text-[#1E6FA8] text-xs hover:underline"
+                        >
+                          {sub.email}
+                        </a>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400 font-semibold">
+                      #{i + 1}
+                    </span>
+                  </div>
+                  {sub.company && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                        Company
+                      </p>
+                      <p className="text-sm text-gray-700">{sub.company}</p>
+                    </div>
+                  )}
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                      Hiring Needs
+                    </p>
+                    <p className="text-sm text-gray-700">{sub.hiringNeeds}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                      Submitted
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatDate(sub.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+    </div>
+  );
 }
 
 // --- Navbar ---
@@ -990,10 +1375,23 @@ function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setSubmitting(false);
-    toast.success("Message sent! We'll be in touch within 24 hours.");
-    setForm({ name: "", email: "", company: "", hiringNeeds: "" });
+    try {
+      const actor = await createActorWithConfig();
+      await actor.submitForm(
+        form.name,
+        form.email,
+        form.company,
+        form.hiringNeeds,
+      );
+      toast.success("Message sent! We'll be in touch within 24 hours.");
+      setForm({ name: "", email: "", company: "", hiringNeeds: "" });
+    } catch {
+      toast.error(
+        "Something went wrong. Please try again or email us directly.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -1307,6 +1705,18 @@ function SectionHeader({
 
 // --- App ---
 export default function App() {
+  const [hash, setHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  if (hash === "#admin") {
+    return <AdminDashboard />;
+  }
+
   return (
     <>
       <Toaster position="top-center" richColors />

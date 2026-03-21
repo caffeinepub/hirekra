@@ -8,10 +8,50 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const idlService = IDL.Service({});
+export const Submission = IDL.Record({
+  'id' : IDL.Nat,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+  'company' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'hiringNeeds' : IDL.Text,
+});
+
+export const idlService = IDL.Service({
+  'clearSubmissions' : IDL.Func([IDL.Text], [], []),
+  'getAllSubmissions' : IDL.Func([IDL.Text], [IDL.Vec(Submission)], ['query']),
+  'submitForm' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+});
 
 export const idlInitArgs = [];
 
-export const idlFactory = ({ IDL }) => { return IDL.Service({}); };
+export const idlFactory = ({ IDL }) => {
+  const Submission = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'company' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'hiringNeeds' : IDL.Text,
+  });
+  
+  return IDL.Service({
+    'clearSubmissions' : IDL.Func([IDL.Text], [], []),
+    'getAllSubmissions' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(Submission)],
+        ['query'],
+      ),
+    'submitForm' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+  });
+};
 
 export const init = ({ IDL }) => { return []; };

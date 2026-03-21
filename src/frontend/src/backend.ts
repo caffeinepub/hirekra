@@ -89,10 +89,63 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface Submission {
+    id: bigint;
+    name: string;
+    email: string;
+    company: string;
+    timestamp: bigint;
+    hiringNeeds: string;
+}
 export interface backendInterface {
+    clearSubmissions(password: string): Promise<void>;
+    getAllSubmissions(password: string): Promise<Array<Submission>>;
+    submitForm(name: string, email: string, company: string, hiringNeeds: string): Promise<bigint>;
 }
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async clearSubmissions(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearSubmissions(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearSubmissions(arg0);
+            return result;
+        }
+    }
+    async getAllSubmissions(arg0: string): Promise<Array<Submission>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllSubmissions(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllSubmissions(arg0);
+            return result;
+        }
+    }
+    async submitForm(arg0: string, arg1: string, arg2: string, arg3: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.submitForm(arg0, arg1, arg2, arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.submitForm(arg0, arg1, arg2, arg3);
+            return result;
+        }
+    }
 }
 export interface CreateActorOptions {
     agent?: Agent;
