@@ -586,11 +586,11 @@ function Leadership() {
                 key={l.name}
                 className="bg-card border border-border rounded-2xl shadow-card overflow-hidden"
               >
-                <div className="aspect-[4/3] overflow-hidden bg-muted">
+                <div className="aspect-square overflow-hidden bg-muted">
                   <img
                     src={l.img}
                     alt={`${l.name} - ${l.role}`}
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-cover object-center"
                   />
                 </div>
                 <div className="p-7">
