@@ -556,14 +556,14 @@ function Leadership() {
     {
       name: "Kratika",
       role: "Founder",
-      img: "/assets/uploads/IMG_0925-1-1.jpeg",
+      img: "/assets/uploads/IMG_0932-1.jpeg",
       linkedin: "https://www.linkedin.com/in/kratikahaldwani",
       bio: "Visionary behind HireKra with deep expertise in talent acquisition and business growth. Kratika founded HireKra with a mission to transform how companies build their teams — combining intuition, data, and a human-first approach to recruitment.",
     },
     {
       name: "Vansh Gupta",
       role: "Co-Founder",
-      img: "/assets/uploads/IMG_0023-2.png",
+      img: "/assets/uploads/IMG_0023-2.jpeg",
       linkedin: "https://www.linkedin.com/in/vansh-gupta-647686166",
       bio: "Driving operations, client partnerships, and scaling. Vansh is focused on building strong hiring pipelines and execution excellence — ensuring every client engagement delivers measurable outcomes and long-term hiring success.",
     },
