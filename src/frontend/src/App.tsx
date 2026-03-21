@@ -194,7 +194,7 @@ function Hero() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center pt-20">
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
-          Building Teams That
+          Hire Top Talent Faster
           <br />
           <span
             className="text-transparent bg-clip-text"
@@ -202,21 +202,26 @@ function Hero() {
               backgroundImage: "linear-gradient(90deg, #60C3F5, #A8D8FF)",
             }}
           >
-            Drive Growth
+            with HireKra
           </span>
         </h1>
 
         <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10 font-medium">
-          Your trusted recruitment partner across India &amp; the Middle East —
-          connecting top talent with ambitious organizations.
+          Your specialist recruitment partner across India &amp; the Middle East
+          — delivering the right talent, at the right time, every time.
         </p>
 
         {/* Highlight badges */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {[
-            { icon: <Zap size={14} />, label: "Fast Hiring Turnaround" },
-            { icon: <Users size={14} />, label: "Strong Talent Network" },
-            { icon: <Globe size={14} />, label: "Pan-India & Middle East" },
+            { icon: <Users size={14} />, label: "Specialized Non-IT Hiring" },
+            { icon: <TrendingUp size={14} />, label: "Volume Hiring" },
+            {
+              icon: <Briefcase size={14} />,
+              label: "Contract & Permanent Staffing",
+            },
+            { icon: <Target size={14} />, label: "Niche Hiring" },
+            { icon: <Settings size={14} />, label: "Customized to Your Goals" },
           ].map((b) => (
             <span
               key={b.label}
@@ -633,28 +638,23 @@ function WhyChoose() {
   const reasons = [
     {
       icon: <Zap size={22} />,
-      title: "Quick Turnaround Time",
-      desc: "We understand that time-to-hire is critical. Our streamlined process ensures fast, efficient placements without compromising quality.",
+      title: "Fast Turnaround Time",
+      desc: "We move fast. From sourcing to final offer, our streamlined process ensures you get the right hire quickly — without compromising on quality.",
     },
     {
-      icon: <CheckCircle size={22} />,
-      title: "Quality Candidate Screening",
-      desc: "Multi-stage screening and assessment for every candidate. Only the most qualified profiles reach your desk.",
-    },
-    {
-      icon: <MessageSquare size={22} />,
-      title: "Transparent Communication",
-      desc: "Regular updates, honest feedback, and open dialogue throughout the entire hiring lifecycle.",
+      icon: <Users size={22} />,
+      title: "Strong Candidate Pipeline",
+      desc: "Access a continuously refreshed pool of pre-screened, job-ready candidates built from years of active network cultivation.",
     },
     {
       icon: <TrendingUp size={22} />,
-      title: "Cost-Effective Solutions",
-      desc: "Competitive pricing models designed to deliver maximum ROI — whether you're a startup or an enterprise.",
+      title: "Expertise in Bulk Hiring",
+      desc: "Proven track record in high-volume hiring campaigns — seamlessly managing large mandates with speed, accuracy, and consistency.",
     },
     {
-      icon: <Settings size={22} />,
-      title: "Customized Hiring Strategies",
-      desc: "No one-size-fits-all. We tailor our approach to your unique culture, requirements, and hiring goals.",
+      icon: <Globe size={22} />,
+      title: "PAN India + Middle East Reach",
+      desc: "Deep talent networks spanning every major metro in India and key Middle East markets — giving you access to the best talent wherever they are.",
     },
   ];
 
@@ -668,13 +668,11 @@ function WhyChoose() {
             subtitle="We go beyond filling positions — we build partnerships that fuel long-term organizational success."
           />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {reasons.map((r, i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-5">
+            {reasons.map((r) => (
               <div
                 key={r.title}
-                className={`flex gap-4 bg-card border border-border rounded-2xl p-7 shadow-card ${
-                  i === 4 ? "sm:col-span-2 lg:col-span-1 lg:col-start-2" : ""
-                }`}
+                className="flex gap-4 bg-card border border-border rounded-2xl p-7 shadow-card"
               >
                 <div className="w-11 h-11 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0 mt-0.5">
                   {r.icon}
