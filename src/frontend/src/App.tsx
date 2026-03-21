@@ -8,8 +8,10 @@ import {
   Award,
   Briefcase,
   Building2,
+  CalendarDays,
   CheckCircle,
   Globe,
+  Handshake,
   Linkedin,
   Mail,
   MapPin,
@@ -836,6 +838,144 @@ function WhyChoose() {
   );
 }
 
+// --- Client CTA ---
+function ClientCTA() {
+  const ref = useFadeIn();
+
+  const scrollToContact = () => {
+    document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const ctaActions = [
+    {
+      label: "Book a Call",
+      icon: <CalendarDays size={20} />,
+      ocid: "cta.book_call_button",
+      variant: "book" as const,
+    },
+    {
+      label: "Hire Now",
+      icon: <Users size={20} />,
+      ocid: "cta.hire_now_button",
+      variant: "hire" as const,
+    },
+    {
+      label: "Partner With Us",
+      icon: <Handshake size={20} />,
+      ocid: "cta.partner_button",
+      variant: "partner" as const,
+    },
+  ];
+
+  return (
+    <section
+      className="relative py-20 overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(135deg, #0A2E45 0%, #0B3D5C 40%, #1E4D7A 70%, #1E6FA8 100%)",
+      }}
+    >
+      {/* Dot grid overlay */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-1/4 w-72 h-72 rounded-full opacity-10 bg-white blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-64 h-64 rounded-full opacity-10 bg-sky-300 blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <div ref={ref} className="section-fade-in">
+          {/* Eyebrow */}
+          <span className="inline-flex items-center gap-2 bg-white/15 border border-white/25 text-white/90 text-xs font-semibold rounded-full px-4 py-1.5 mb-6 uppercase tracking-wider">
+            <Zap size={12} />
+            Work With HireKra
+          </span>
+
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4">
+            Ready to Build Your
+            <br />
+            <span
+              className="text-transparent bg-clip-text"
+              style={{
+                backgroundImage: "linear-gradient(90deg, #60C3F5, #A8D8FF)",
+              }}
+            >
+              Dream Team?
+            </span>
+          </h2>
+
+          <p className="text-white/75 text-lg max-w-xl mx-auto mb-12 leading-relaxed">
+            Take the next step — choose how you'd like to work with us and let's
+            start building something great together.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {ctaActions.map((action) => {
+              if (action.variant === "book") {
+                return (
+                  <button
+                    key={action.label}
+                    type="button"
+                    data-ocid={action.ocid}
+                    onClick={scrollToContact}
+                    className="flex items-center gap-2.5 bg-white text-navy hover:bg-white/90 rounded-full px-8 py-4 text-base font-bold shadow-lg transition-all duration-200 hover:scale-105 w-full sm:w-auto justify-center"
+                  >
+                    {action.icon}
+                    {action.label}
+                  </button>
+                );
+              }
+              if (action.variant === "hire") {
+                return (
+                  <button
+                    key={action.label}
+                    type="button"
+                    data-ocid={action.ocid}
+                    onClick={scrollToContact}
+                    className="flex items-center gap-2.5 rounded-full px-8 py-4 text-base font-bold shadow-lg transition-all duration-200 hover:scale-105 w-full sm:w-auto justify-center text-white border-2 border-white/40 hover:border-white/70 hover:bg-white/10"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(30,79,122,0.8) 0%, rgba(30,111,168,0.9) 100%)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    {action.icon}
+                    {action.label}
+                  </button>
+                );
+              }
+              return (
+                <button
+                  key={action.label}
+                  type="button"
+                  data-ocid={action.ocid}
+                  onClick={scrollToContact}
+                  className="flex items-center gap-2.5 bg-transparent border-2 border-white/60 text-white hover:bg-white/10 hover:border-white rounded-full px-8 py-4 text-base font-bold transition-all duration-200 hover:scale-105 w-full sm:w-auto justify-center"
+                >
+                  {action.icon}
+                  {action.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Trust note */}
+          <p className="mt-10 text-white/45 text-sm">
+            No commitment required · Typically respond within 24 hours
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // --- Contact ---
 function Contact() {
   const ref = useFadeIn();
@@ -1179,6 +1319,7 @@ export default function App() {
         <HiringProcess />
         <Leadership />
         <WhyChoose />
+        <ClientCTA />
         <Contact />
       </main>
       <Footer />
