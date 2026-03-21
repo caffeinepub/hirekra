@@ -9,7 +9,6 @@ import {
   Briefcase,
   Building2,
   CheckCircle,
-  Code2,
   Globe,
   Linkedin,
   Mail,
@@ -91,9 +90,11 @@ function Navbar() {
             onClick={() => scrollTo("#home")}
             className="flex items-center gap-2 font-bold text-xl"
           >
-            <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-navy text-white text-sm font-extrabold tracking-tight">
-              HK
-            </span>
+            <img
+              src="/assets/uploads/IMG_0928-1.jpeg"
+              alt="HireKra Logo"
+              className="h-10 w-10 rounded-full object-cover"
+            />
             <span className="text-navy">
               Hire<span className="text-brand-blue">Kra</span>
             </span>
@@ -192,13 +193,6 @@ function Hero() {
       <div className="absolute bottom-1/4 left-0 w-80 h-80 rounded-full opacity-10 bg-white blur-3xl" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center pt-20">
-        <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-8">
-          <Star size={14} className="text-yellow-300 fill-yellow-300" />
-          <span className="text-white/90 text-sm font-medium">
-            Trusted by 50+ Companies across India & Middle East
-          </span>
-        </div>
-
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
           Building Teams That
           <br />
@@ -330,10 +324,8 @@ function About() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
             {[
-              { value: "50+", label: "Clients Served" },
-              { value: "1000+", label: "Placements Made" },
               { value: "2", label: "Regions Covered" },
               { value: "5+", label: "Industries" },
             ].map((s) => (
@@ -386,9 +378,10 @@ function Presence() {
                   </div>
                 </div>
                 <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-                  Headquartered in India with deep-rooted networks across all
-                  major metros and tier-2 cities. We source talent from every
-                  corner of the country.
+                  Headquartered in Mumbai (Innov8 Parinee Crescenzo, Bandra
+                  East) with deep-rooted networks across all major metros and
+                  tier-2 cities. We source talent from every corner of the
+                  country.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -474,11 +467,6 @@ function Expertise() {
 
   const services = [
     {
-      icon: <Code2 size={24} />,
-      title: "IT Recruitment",
-      desc: "Sourcing top-tier software engineers, data scientists, DevOps, and tech leaders for cutting-edge organizations.",
-    },
-    {
       icon: <Users size={24} />,
       title: "Non-IT & Bulk Hiring",
       desc: "High-volume recruitment solutions for operations, sales, logistics, and manufacturing roles at scale.",
@@ -501,7 +489,7 @@ function Expertise() {
   ];
 
   const industries = [
-    { icon: <Code2 size={16} />, label: "Technology" },
+    { icon: <Building2 size={16} />, label: "Technology" },
     { icon: <Building2 size={16} />, label: "BFSI" },
     { icon: <Shield size={16} />, label: "Healthcare" },
     { icon: <Briefcase size={16} />, label: "E-commerce" },
@@ -518,13 +506,11 @@ function Expertise() {
             subtitle="Comprehensive recruitment solutions tailored to your industry, scale, and hiring objectives."
           />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-            {services.map((s, i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-5 mb-12">
+            {services.map((s) => (
               <div
                 key={s.title}
-                className={`group bg-card border border-border rounded-2xl p-7 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ${
-                  i === 4 ? "sm:col-start-2 lg:col-start-auto" : ""
-                }`}
+                className="group bg-card border border-border rounded-2xl p-7 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="w-12 h-12 rounded-xl bg-navy/10 group-hover:bg-navy group-hover:text-white flex items-center justify-center text-navy mb-5 transition-all duration-300">
                   {s.icon}
@@ -571,12 +557,14 @@ function Leadership() {
       name: "Kratika",
       role: "Founder",
       img: "/assets/uploads/IMG_0925-1.jpeg",
+      linkedin: "https://www.linkedin.com/in/kratikahaldwani",
       bio: "Visionary behind HireKra with deep expertise in talent acquisition and business growth. Kratika founded HireKra with a mission to transform how companies build their teams — combining intuition, data, and a human-first approach to recruitment.",
     },
     {
       name: "Vansh Gupta",
       role: "Co-Founder",
       img: "/assets/uploads/IMG_0023-2.png",
+      linkedin: "https://www.linkedin.com/in/vansh-gupta-647686166",
       bio: "Driving operations, client partnerships, and scaling. Vansh is focused on building strong hiring pipelines and execution excellence — ensuring every client engagement delivers measurable outcomes and long-term hiring success.",
     },
   ];
@@ -615,9 +603,15 @@ function Leadership() {
                         {l.role}
                       </span>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-navy/10 flex items-center justify-center">
-                      <UserCheck size={18} className="text-navy" />
-                    </div>
+                    <a
+                      href={l.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${l.name} on LinkedIn`}
+                      className="w-10 h-10 rounded-xl bg-[#0077B5]/10 hover:bg-[#0077B5] flex items-center justify-center text-[#0077B5] hover:text-white transition-all duration-200"
+                    >
+                      <Linkedin size={18} />
+                    </a>
                   </div>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {l.bio}
@@ -833,7 +827,7 @@ function Contact() {
                 <h3 className="font-bold text-lg mb-6">Reach Us Directly</h3>
                 <div className="space-y-5">
                   <a
-                    href="mailto:contact@hirekra.com"
+                    href="mailto:info@hirekra.com"
                     className="flex items-center gap-4 group"
                   >
                     <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center group-hover:bg-white/25 transition-colors">
@@ -841,11 +835,11 @@ function Contact() {
                     </div>
                     <div>
                       <p className="text-white/60 text-xs">Email</p>
-                      <p className="font-semibold">contact@hirekra.com</p>
+                      <p className="font-semibold">info@hirekra.com</p>
                     </div>
                   </a>
                   <a
-                    href="tel:+91XXXXXXXXXX"
+                    href="tel:+918587079103"
                     className="flex items-center gap-4 group"
                   >
                     <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center group-hover:bg-white/25 transition-colors">
@@ -853,7 +847,7 @@ function Contact() {
                     </div>
                     <div>
                       <p className="text-white/60 text-xs">Phone</p>
-                      <p className="font-semibold">+91 XXXXX XXXXX</p>
+                      <p className="font-semibold">+91 85870 79103</p>
                     </div>
                   </a>
                   <div className="flex items-center gap-4">
@@ -862,7 +856,11 @@ function Contact() {
                     </div>
                     <div>
                       <p className="text-white/60 text-xs">Headquarters</p>
-                      <p className="font-semibold">India</p>
+                      <p className="font-semibold text-sm leading-snug">
+                        Innov8 Parinee Crescenzo, 17th FL
+                        <br />
+                        Bandra East, Mumbai 400051
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -914,9 +912,11 @@ function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-blue text-white text-sm font-extrabold">
-                HK
-              </span>
+              <img
+                src="/assets/uploads/IMG_0928-1.jpeg"
+                alt="HireKra Logo"
+                className="h-10 w-10 rounded-full object-cover"
+              />
               <span className="text-xl font-bold">
                 Hire<span className="text-brand-blue">Kra</span>
               </span>
@@ -962,7 +962,6 @@ function Footer() {
             </h4>
             <ul className="space-y-2">
               {[
-                "IT Recruitment",
                 "Non-IT & Bulk Hiring",
                 "Startup Hiring",
                 "Leadership Hiring",
