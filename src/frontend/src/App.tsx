@@ -555,7 +555,7 @@ function Leadership() {
   const leaders = [
     {
       name: "Kratika",
-      role: "Founder",
+      role: "Founder & CEO",
       img: "/assets/uploads/IMG_0932-1.jpeg",
       linkedin: "https://www.linkedin.com/in/kratikahaldwani",
       bio: "Visionary behind HireKra with deep expertise in talent acquisition and business growth. Kratika founded HireKra with a mission to transform how companies build their teams — combining intuition, data, and a human-first approach to recruitment.",
