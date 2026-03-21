@@ -562,7 +562,7 @@ function Leadership() {
     },
     {
       name: "Vansh Gupta",
-      role: "Co-Founder",
+      role: "Co-Founder & Head of Operations",
       img: "/assets/uploads/IMG_0023-2.jpeg",
       linkedin: "https://www.linkedin.com/in/vansh-gupta-647686166",
       bio: "Driving operations, client partnerships, and scaling. Vansh is focused on building strong hiring pipelines and execution excellence — ensuring every client engagement delivers measurable outcomes and long-term hiring success.",
