@@ -10,8 +10,14 @@ import {
   Building2,
   CalendarDays,
   CheckCircle,
+  Clock,
+  Coffee,
+  FileText,
   Globe,
+  GraduationCap,
   Handshake,
+  Heart,
+  Lightbulb,
   Linkedin,
   Lock,
   LogOut,
@@ -20,21 +26,59 @@ import {
   Menu,
   MessageSquare,
   Phone,
+  Plus,
   RefreshCw,
   Settings,
   Shield,
   Star,
   Target,
+  ToggleLeft,
+  Trash2,
   TrendingUp,
   UserCheck,
   Users,
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Submission } from "./backend";
+
+// JobListing type (from backend)
+interface JobListing {
+  id: bigint;
+  title: string;
+  jobType: string;
+  location: string;
+  description: string;
+  skills: string;
+  isInternship: boolean;
+  duration: string;
+  stipend: string;
+  isActive: boolean;
+  createdAt: bigint;
+}
+
+// Career application type (from backend)
+interface CareerApplication {
+  id: bigint;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  coverLetter: string;
+  timestamp: bigint;
+}
 import { createActorWithConfig } from "./config";
+
+// Extend Submission type locally to include formSource
+type SubmissionWithSource = Submission & { formSource?: string };
+
+// Context for tracking which CTA was clicked
+const FormSourceContext = createContext<{
+  formSource: string;
+  setFormSource: (src: string) => void;
+}>({ formSource: "Direct", setFormSource: () => {} });
 
 // --- Scroll animation hook ---
 function useFadeIn() {
@@ -64,6 +108,24 @@ function AdminDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<"contacts" | "careers" | "jobs">(
+    "contacts",
+  );
+  const [careerApps, setCareerApps] = useState<CareerApplication[]>([]);
+  const [careerLoading, setCareerLoading] = useState(false);
+  const [jobListings, setJobListings] = useState<JobListing[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  const [jobForm, setJobForm] = useState({
+    title: "",
+    jobType: "Full-Time",
+    location: "",
+    description: "",
+    skills: "",
+    isInternship: false,
+    duration: "",
+    stipend: "",
+  });
+  const [postingJob, setPostingJob] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,6 +254,93 @@ function AdminDashboard() {
     );
   }
 
+  const handleLoadCareers = async () => {
+    setCareerLoading(true);
+    try {
+      const actor = await createActorWithConfig();
+      const data = (await (actor as any).getAllCareerApplications(
+        password,
+      )) as CareerApplication[];
+      setCareerApps(data);
+    } catch {
+      toast.error("Failed to load career applications.");
+    } finally {
+      setCareerLoading(false);
+    }
+  };
+
+  const handleLoadJobs = async () => {
+    setJobsLoading(true);
+    try {
+      const actor = await createActorWithConfig();
+      const data = (await (actor as any).getAllJobListings(
+        password,
+      )) as JobListing[];
+      setJobListings(data);
+    } catch {
+      toast.error("Failed to load job listings.");
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const handlePostJob = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPostingJob(true);
+    try {
+      const actor = await createActorWithConfig();
+      await (actor as any).createJobListing(
+        password,
+        jobForm.title,
+        jobForm.jobType,
+        jobForm.location,
+        jobForm.description,
+        jobForm.skills,
+        jobForm.isInternship,
+        jobForm.duration,
+        jobForm.stipend,
+      );
+      toast.success("Job posted successfully!");
+      setJobForm({
+        title: "",
+        jobType: "Full-Time",
+        location: "",
+        description: "",
+        skills: "",
+        isInternship: false,
+        duration: "",
+        stipend: "",
+      });
+      handleLoadJobs();
+    } catch {
+      toast.error("Failed to post job.");
+    } finally {
+      setPostingJob(false);
+    }
+  };
+
+  const handleToggleJob = async (jobId: bigint) => {
+    try {
+      const actor = await createActorWithConfig();
+      await (actor as any).toggleJobActive(password, jobId);
+      handleLoadJobs();
+    } catch {
+      toast.error("Failed to toggle job status.");
+    }
+  };
+
+  const handleDeleteJob = async (jobId: bigint) => {
+    if (!window.confirm("Delete this job listing?")) return;
+    try {
+      const actor = await createActorWithConfig();
+      await (actor as any).deleteJobListing(password, jobId);
+      toast.success("Job deleted.");
+      handleLoadJobs();
+    } catch {
+      toast.error("Failed to delete job.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-center" richColors />
@@ -247,90 +396,753 @@ function AdminDashboard() {
 
       {/* Main */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        {/* Stats */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-extrabold text-[#0A2E45] mb-1">
-            Partner Form Submissions
-          </h2>
-          <p className="text-gray-500 text-sm">
-            {submissions.length}{" "}
-            {submissions.length === 1 ? "submission" : "submissions"} received
-          </p>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8">
+          <button
+            data-ocid="admin.tab"
+            type="button"
+            onClick={() => setActiveTab("contacts")}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${activeTab === "contacts" ? "bg-[#0A2E45] text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+          >
+            Contact Submissions
+          </button>
+          <button
+            type="button"
+            data-ocid="admin.tab"
+            onClick={() => {
+              setActiveTab("careers");
+              handleLoadCareers();
+            }}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${activeTab === "careers" ? "bg-[#0A2E45] text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+          >
+            Career Applications
+          </button>
+          <button
+            type="button"
+            data-ocid="admin.tab"
+            onClick={() => {
+              setActiveTab("jobs");
+              handleLoadJobs();
+            }}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors ${activeTab === "jobs" ? "bg-[#0A2E45] text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+          >
+            Job Postings
+          </button>
         </div>
 
-        {loading ? (
-          <div
-            data-ocid="admin.loading_state"
-            className="flex items-center justify-center py-24"
-          >
-            <RefreshCw size={28} className="animate-spin text-[#1E6FA8]" />
-          </div>
-        ) : submissions.length === 0 ? (
-          <div
-            data-ocid="admin.empty_state"
-            className="flex flex-col items-center justify-center py-24 text-center"
-          >
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-              style={{
-                background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
-              }}
-            >
-              <Mail size={32} className="text-white" />
+        {activeTab === "jobs" ? (
+          <div>
+            {/* Post New Job Form */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+              <h2 className="text-xl font-extrabold text-[#0A2E45] mb-1 flex items-center gap-2">
+                <Plus size={20} />
+                Post New Job
+              </h2>
+              <p className="text-gray-500 text-sm mb-5">
+                Add a new opening to the Careers page
+              </p>
+              <form
+                onSubmit={handlePostJob}
+                className="grid sm:grid-cols-2 gap-4"
+              >
+                <div className="space-y-1.5">
+                  <Label htmlFor="job-title" className="text-sm font-semibold">
+                    Job Title *
+                  </Label>
+                  <Input
+                    id="job-title"
+                    data-ocid="admin.input"
+                    placeholder="e.g. Senior Recruitment Consultant"
+                    value={jobForm.title}
+                    onChange={(e) =>
+                      setJobForm((p) => ({ ...p, title: e.target.value }))
+                    }
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="job-type" className="text-sm font-semibold">
+                    Job Type
+                  </Label>
+                  <select
+                    id="job-type"
+                    data-ocid="admin.select"
+                    value={jobForm.jobType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setJobForm((p) => ({
+                        ...p,
+                        jobType: val,
+                        isInternship: val === "Internship",
+                      }));
+                    }}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E6FA8]"
+                  >
+                    <option>Full-Time</option>
+                    <option>Part-Time</option>
+                    <option>Contract</option>
+                    <option>Internship</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="job-location"
+                    className="text-sm font-semibold"
+                  >
+                    Location *
+                  </Label>
+                  <Input
+                    id="job-location"
+                    data-ocid="admin.input"
+                    placeholder="e.g. Mumbai / Remote"
+                    value={jobForm.location}
+                    onChange={(e) =>
+                      setJobForm((p) => ({ ...p, location: e.target.value }))
+                    }
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="job-skills" className="text-sm font-semibold">
+                    Required Skills
+                  </Label>
+                  <Input
+                    id="job-skills"
+                    data-ocid="admin.input"
+                    placeholder="e.g. Talent Acquisition, Communication"
+                    value={jobForm.skills}
+                    onChange={(e) =>
+                      setJobForm((p) => ({ ...p, skills: e.target.value }))
+                    }
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="sm:col-span-2 space-y-1.5">
+                  <Label htmlFor="job-desc" className="text-sm font-semibold">
+                    Description *
+                  </Label>
+                  <Textarea
+                    id="job-desc"
+                    data-ocid="admin.textarea"
+                    placeholder="Describe the role, responsibilities, and requirements..."
+                    value={jobForm.description}
+                    onChange={(e) =>
+                      setJobForm((p) => ({ ...p, description: e.target.value }))
+                    }
+                    required
+                    className="rounded-xl min-h-[80px] resize-none"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="job-internship"
+                    data-ocid="admin.checkbox"
+                    checked={jobForm.isInternship}
+                    onChange={(e) =>
+                      setJobForm((p) => ({
+                        ...p,
+                        isInternship: e.target.checked,
+                      }))
+                    }
+                    className="w-4 h-4 accent-[#0A2E45]"
+                  />
+                  <Label
+                    htmlFor="job-internship"
+                    className="text-sm font-semibold cursor-pointer"
+                  >
+                    Is Internship?
+                  </Label>
+                </div>
+                {jobForm.isInternship && (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="job-duration"
+                        className="text-sm font-semibold"
+                      >
+                        Duration
+                      </Label>
+                      <Input
+                        id="job-duration"
+                        data-ocid="admin.input"
+                        placeholder="e.g. 3 Months"
+                        value={jobForm.duration}
+                        onChange={(e) =>
+                          setJobForm((p) => ({
+                            ...p,
+                            duration: e.target.value,
+                          }))
+                        }
+                        className="rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label
+                        htmlFor="job-stipend"
+                        className="text-sm font-semibold"
+                      >
+                        Stipend
+                      </Label>
+                      <Input
+                        id="job-stipend"
+                        data-ocid="admin.input"
+                        placeholder="e.g. ₹8,000/month"
+                        value={jobForm.stipend}
+                        onChange={(e) =>
+                          setJobForm((p) => ({ ...p, stipend: e.target.value }))
+                        }
+                        className="rounded-xl"
+                      />
+                    </div>
+                  </>
+                )}
+                <div className="sm:col-span-2">
+                  <Button
+                    data-ocid="admin.submit_button"
+                    type="submit"
+                    disabled={postingJob}
+                    className="bg-[#0A2E45] hover:bg-[#1E6FA8] text-white rounded-full px-8 font-bold transition-colors"
+                  >
+                    {postingJob ? "Posting..." : "Post Job"}
+                  </Button>
+                </div>
+              </form>
             </div>
-            <h3 className="text-xl font-bold text-[#0A2E45] mb-2">
-              No submissions yet
-            </h3>
-            <p className="text-gray-500 text-sm max-w-xs">
-              When clients fill out the "Partner With Us" form, their details
-              will appear here.
-            </p>
+
+            {/* Existing Jobs Table */}
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-extrabold text-[#0A2E45]">
+                All Job Listings
+              </h2>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleLoadJobs}
+                disabled={jobsLoading}
+                className="rounded-full border-gray-200"
+              >
+                <RefreshCw
+                  size={14}
+                  className={`mr-1.5 ${jobsLoading ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </Button>
+            </div>
+            {jobsLoading ? (
+              <div
+                data-ocid="admin.loading_state"
+                className="flex items-center justify-center py-16"
+              >
+                <RefreshCw size={28} className="animate-spin text-[#1E6FA8]" />
+              </div>
+            ) : jobListings.length === 0 ? (
+              <div
+                data-ocid="admin.empty_state"
+                className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-gray-200"
+              >
+                <Briefcase size={32} className="text-gray-300 mb-3" />
+                <h3 className="font-bold text-gray-600 mb-1">
+                  No job listings yet
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Use the form above to add your first opening.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <table data-ocid="admin.table" className="w-full">
+                  <thead>
+                    <tr
+                      style={{
+                        background: "linear-gradient(135deg, #0A2E45, #1E4D7A)",
+                      }}
+                    >
+                      <th className="text-left px-5 py-3 text-white text-xs font-bold uppercase tracking-wider">
+                        Title
+                      </th>
+                      <th className="text-left px-5 py-3 text-white text-xs font-bold uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="text-left px-5 py-3 text-white text-xs font-bold uppercase tracking-wider hidden md:table-cell">
+                        Location
+                      </th>
+                      <th className="text-left px-5 py-3 text-white text-xs font-bold uppercase tracking-wider hidden sm:table-cell">
+                        Internship
+                      </th>
+                      <th className="text-left px-5 py-3 text-white text-xs font-bold uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="text-left px-5 py-3 text-white text-xs font-bold uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {jobListings.map((job, i) => (
+                      <tr
+                        key={String(job.id)}
+                        data-ocid={`admin.row.item.${i + 1}`}
+                        className="hover:bg-blue-50/50 transition-colors"
+                      >
+                        <td className="px-5 py-4">
+                          <p className="font-semibold text-gray-800 text-sm">
+                            {job.title}
+                          </p>
+                          <p className="text-xs text-gray-400 md:hidden">
+                            {job.location}
+                          </p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                            {job.jobType}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-gray-700 hidden md:table-cell">
+                          {job.location}
+                        </td>
+                        <td className="px-5 py-4 hidden sm:table-cell">
+                          {job.isInternship ? (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
+                              Yes
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full font-semibold">
+                              No
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          {job.isActive ? (
+                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-semibold">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full font-semibold">
+                              Inactive
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              data-ocid={`admin.toggle.${i + 1}`}
+                              onClick={() => handleToggleJob(job.id)}
+                              title={job.isActive ? "Deactivate" : "Activate"}
+                              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#1E6FA8] transition-colors"
+                            >
+                              <ToggleLeft size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              data-ocid={`admin.delete_button.${i + 1}`}
+                              onClick={() => handleDeleteJob(job.id)}
+                              title="Delete"
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : activeTab === "careers" ? (
+          <div>
+            <div className="mb-8">
+              <h2 className="text-2xl font-extrabold text-[#0A2E45] mb-1">
+                Career Applications
+              </h2>
+              <p className="text-gray-500 text-sm">
+                {careerApps.length}{" "}
+                {careerApps.length === 1 ? "application" : "applications"}{" "}
+                received
+              </p>
+            </div>
+            {careerLoading ? (
+              <div
+                data-ocid="admin.loading_state"
+                className="flex items-center justify-center py-24"
+              >
+                <RefreshCw size={28} className="animate-spin text-[#1E6FA8]" />
+              </div>
+            ) : careerApps.length === 0 ? (
+              <div
+                data-ocid="admin.empty_state"
+                className="flex flex-col items-center justify-center py-24 text-center"
+              >
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+                  style={{
+                    background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                  }}
+                >
+                  <Briefcase size={32} className="text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-[#0A2E45] mb-2">
+                  No career applications yet
+                </h3>
+                <p className="text-gray-500 text-sm max-w-xs">
+                  When candidates apply via the Careers page, their details will
+                  appear here.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <table data-ocid="admin.table" className="w-full">
+                    <thead>
+                      <tr
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #0A2E45, #1E4D7A)",
+                        }}
+                      >
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          #
+                        </th>
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Phone
+                        </th>
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Position
+                        </th>
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Cover Letter
+                        </th>
+                        <th className="text-left px-5 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Date
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {careerApps.map((app, i) => (
+                        <tr
+                          key={String(app.id)}
+                          data-ocid={`admin.row.item.${i + 1}`}
+                          className="hover:bg-blue-50/50 transition-colors"
+                        >
+                          <td className="px-5 py-4 text-sm font-semibold text-gray-400">
+                            {i + 1}
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                                style={{
+                                  background:
+                                    "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                                }}
+                              >
+                                {app.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-semibold text-gray-800 text-sm">
+                                {app.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <a
+                              href={`mailto:${app.email}`}
+                              className="text-[#1E6FA8] hover:underline text-sm"
+                            >
+                              {app.email}
+                            </a>
+                          </td>
+                          <td className="px-5 py-4 text-sm text-gray-700">
+                            {app.phone}
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                              {app.position}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <p className="text-sm text-gray-700 max-w-xs line-clamp-2">
+                              {app.coverLetter || (
+                                <span className="text-gray-400 italic">
+                                  Not provided
+                                </span>
+                              )}
+                            </p>
+                          </td>
+                          <td className="px-5 py-4 text-sm text-gray-500 whitespace-nowrap">
+                            {formatDate(app.timestamp)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="md:hidden flex flex-col gap-4">
+                  {careerApps.map((app, i) => (
+                    <div
+                      key={String(app.id)}
+                      data-ocid={`admin.row.item.${i + 1}`}
+                      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                          }}
+                        >
+                          {app.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800">{app.name}</p>
+                          <a
+                            href={`mailto:${app.email}`}
+                            className="text-[#1E6FA8] text-xs hover:underline"
+                          >
+                            {app.email}
+                          </a>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <p>
+                          <span className="font-semibold">Phone:</span>{" "}
+                          {app.phone}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Position:</span>{" "}
+                          {app.position}
+                        </p>
+                        {app.coverLetter && (
+                          <p>
+                            <span className="font-semibold">Message:</span>{" "}
+                            {app.coverLetter}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400">
+                          {formatDate(app.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : (
-          <>
-            {/* Desktop table */}
-            <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              <table data-ocid="admin.table" className="w-full">
-                <thead>
-                  <tr
-                    style={{
-                      background: "linear-gradient(135deg, #0A2E45, #1E4D7A)",
-                    }}
-                  >
-                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
-                      Company
-                    </th>
-                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
-                      Hiring Needs
-                    </th>
-                    <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
-                      Date &amp; Time
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
+          <div>
+            {/* Stats */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-extrabold text-[#0A2E45] mb-1">
+                Client Form Submissions
+              </h2>
+              <p className="text-gray-500 text-sm mb-3">
+                {submissions.length}{" "}
+                {submissions.length === 1 ? "submission" : "submissions"}{" "}
+                received
+              </p>
+              {submissions.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {(
+                    ["Partner With Us", "Book a Call", "Hire Now"] as const
+                  ).map((src) => {
+                    const count = (
+                      submissions as SubmissionWithSource[]
+                    ).filter((s) => (s.formSource || "Direct") === src).length;
+                    if (count === 0) return null;
+                    const colors: Record<string, string> = {
+                      "Partner With Us":
+                        "bg-blue-100 text-blue-700 border-blue-200",
+                      "Book a Call":
+                        "bg-green-100 text-green-700 border-green-200",
+                      "Hire Now":
+                        "bg-orange-100 text-orange-700 border-orange-200",
+                    };
+                    return (
+                      <span
+                        key={src}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${colors[src]}`}
+                      >
+                        {src}: {count}
+                      </span>
+                    );
+                  })}
+                  {(() => {
+                    const directCount = (
+                      submissions as SubmissionWithSource[]
+                    ).filter(
+                      (s) => !s.formSource || s.formSource === "Direct",
+                    ).length;
+                    return directCount > 0 ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border bg-gray-100 text-gray-600 border-gray-200">
+                        Direct: {directCount}
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {loading ? (
+              <div
+                data-ocid="admin.loading_state"
+                className="flex items-center justify-center py-24"
+              >
+                <RefreshCw size={28} className="animate-spin text-[#1E6FA8]" />
+              </div>
+            ) : submissions.length === 0 ? (
+              <div
+                data-ocid="admin.empty_state"
+                className="flex flex-col items-center justify-center py-24 text-center"
+              >
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+                  style={{
+                    background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                  }}
+                >
+                  <Mail size={32} className="text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-[#0A2E45] mb-2">
+                  No submissions yet
+                </h3>
+                <p className="text-gray-500 text-sm max-w-xs">
+                  When clients fill out any form (Book a Call, Hire Now, or
+                  Partner With Us), their details will appear here.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <table data-ocid="admin.table" className="w-full">
+                    <thead>
+                      <tr
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #0A2E45, #1E4D7A)",
+                        }}
+                      >
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          #
+                        </th>
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Company
+                        </th>
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Source
+                        </th>
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Hiring Needs
+                        </th>
+                        <th className="text-left px-6 py-4 text-white text-xs font-bold uppercase tracking-wider">
+                          Date &amp; Time
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {submissions.map((sub, i) => (
+                        <tr
+                          key={String(sub.id)}
+                          data-ocid={`admin.row.item.${i + 1}`}
+                          className="hover:bg-blue-50/50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-400">
+                            {i + 1}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                                style={{
+                                  background:
+                                    "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                                }}
+                              >
+                                {sub.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-semibold text-gray-800 text-sm">
+                                {sub.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <a
+                              href={`mailto:${sub.email}`}
+                              className="text-[#1E6FA8] hover:underline text-sm"
+                            >
+                              {sub.email}
+                            </a>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {sub.company || (
+                              <span className="text-gray-400 italic">
+                                Not provided
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {(() => {
+                              const src =
+                                (sub as SubmissionWithSource).formSource ||
+                                "Direct";
+                              const badgeClass: Record<string, string> = {
+                                "Partner With Us": "bg-blue-100 text-blue-700",
+                                "Book a Call": "bg-green-100 text-green-700",
+                                "Hire Now": "bg-orange-100 text-orange-700",
+                              };
+                              return (
+                                <span
+                                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${badgeClass[src] || "bg-gray-100 text-gray-600"}`}
+                                >
+                                  {src}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm text-gray-700 max-w-xs line-clamp-2">
+                              {sub.hiringNeeds}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                            {formatDate(sub.timestamp)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="md:hidden flex flex-col gap-4">
                   {submissions.map((sub, i) => (
-                    <tr
+                    <div
                       key={String(sub.id)}
                       data-ocid={`admin.row.item.${i + 1}`}
-                      className="hover:bg-blue-50/50 transition-colors"
+                      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
                     >
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-400">
-                        {i + 1}
-                      </td>
-                      <td className="px-6 py-4">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
                             style={{
                               background:
                                 "linear-gradient(135deg, #0A2E45, #1E6FA8)",
@@ -338,99 +1150,74 @@ function AdminDashboard() {
                           >
                             {sub.name.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-semibold text-gray-800 text-sm">
-                            {sub.name}
-                          </span>
+                          <div>
+                            <p className="font-bold text-gray-800">
+                              {sub.name}
+                            </p>
+                            <a
+                              href={`mailto:${sub.email}`}
+                              className="text-[#1E6FA8] text-xs hover:underline"
+                            >
+                              {sub.email}
+                            </a>
+                          </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <a
-                          href={`mailto:${sub.email}`}
-                          className="text-[#1E6FA8] hover:underline text-sm"
-                        >
-                          {sub.email}
-                        </a>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {sub.company || (
-                          <span className="text-gray-400 italic">
-                            Not provided
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-700 max-w-xs line-clamp-2">
+                        <span className="text-xs text-gray-400 font-semibold">
+                          #{i + 1}
+                        </span>
+                      </div>
+                      {sub.company && (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                            Company
+                          </p>
+                          <p className="text-sm text-gray-700">{sub.company}</p>
+                        </div>
+                      )}
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                          Hiring Needs
+                        </p>
+                        <p className="text-sm text-gray-700">
                           {sub.hiringNeeds}
                         </p>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                        {formatDate(sub.timestamp)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile cards */}
-            <div className="md:hidden flex flex-col gap-4">
-              {submissions.map((sub, i) => (
-                <div
-                  key={String(sub.id)}
-                  data-ocid={`admin.row.item.${i + 1}`}
-                  className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #0A2E45, #1E6FA8)",
-                        }}
-                      >
-                        {sub.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                          Source
+                        </p>
+                        {(() => {
+                          const src =
+                            (sub as SubmissionWithSource).formSource ||
+                            "Direct";
+                          const badgeClass: Record<string, string> = {
+                            "Partner With Us": "bg-blue-100 text-blue-700",
+                            "Book a Call": "bg-green-100 text-green-700",
+                            "Hire Now": "bg-orange-100 text-orange-700",
+                          };
+                          return (
+                            <span
+                              className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${badgeClass[src] || "bg-gray-100 text-gray-600"}`}
+                            >
+                              {src}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">{sub.name}</p>
-                        <a
-                          href={`mailto:${sub.email}`}
-                          className="text-[#1E6FA8] text-xs hover:underline"
-                        >
-                          {sub.email}
-                        </a>
+                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                          Submitted
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(sub.timestamp)}
+                        </p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400 font-semibold">
-                      #{i + 1}
-                    </span>
-                  </div>
-                  {sub.company && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
-                        Company
-                      </p>
-                      <p className="text-sm text-gray-700">{sub.company}</p>
-                    </div>
-                  )}
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
-                      Hiring Needs
-                    </p>
-                    <p className="text-sm text-gray-700">{sub.hiringNeeds}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
-                      Submitted
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDate(sub.timestamp)}
-                    </p>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </>
+              </>
+            )}
+          </div>
         )}
       </main>
     </div>
@@ -454,6 +1241,7 @@ function Navbar() {
     { label: "Presence", href: "#presence" },
     { label: "Expertise", href: "#expertise" },
     { label: "Leadership", href: "#leadership" },
+    { label: "Careers", href: "#careers" },
     { label: "Contact", href: "#contact" },
   ];
 
@@ -1226,8 +2014,10 @@ function WhyChoose() {
 // --- Client CTA ---
 function ClientCTA() {
   const ref = useFadeIn();
+  const { setFormSource } = useContext(FormSourceContext);
 
-  const scrollToContact = () => {
+  const scrollToContact = (source: string) => {
+    setFormSource(source);
     document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -1309,7 +2099,7 @@ function ClientCTA() {
                     key={action.label}
                     type="button"
                     data-ocid={action.ocid}
-                    onClick={scrollToContact}
+                    onClick={() => scrollToContact(action.label)}
                     className="flex items-center gap-2.5 bg-white text-navy hover:bg-white/90 rounded-full px-8 py-4 text-base font-bold shadow-lg transition-all duration-200 hover:scale-105 w-full sm:w-auto justify-center"
                   >
                     {action.icon}
@@ -1323,7 +2113,7 @@ function ClientCTA() {
                     key={action.label}
                     type="button"
                     data-ocid={action.ocid}
-                    onClick={scrollToContact}
+                    onClick={() => scrollToContact(action.label)}
                     className="flex items-center gap-2.5 rounded-full px-8 py-4 text-base font-bold shadow-lg transition-all duration-200 hover:scale-105 w-full sm:w-auto justify-center text-white border-2 border-white/40 hover:border-white/70 hover:bg-white/10"
                     style={{
                       background:
@@ -1341,7 +2131,7 @@ function ClientCTA() {
                   key={action.label}
                   type="button"
                   data-ocid={action.ocid}
-                  onClick={scrollToContact}
+                  onClick={() => scrollToContact(action.label)}
                   className="flex items-center gap-2.5 bg-transparent border-2 border-white/60 text-white hover:bg-white/10 hover:border-white rounded-full px-8 py-4 text-base font-bold transition-all duration-200 hover:scale-105 w-full sm:w-auto justify-center"
                 >
                   {action.icon}
@@ -1361,9 +2151,503 @@ function ClientCTA() {
   );
 }
 
+// --- Careers ---
+function Careers() {
+  const ref = useFadeIn();
+  const formRef = useRef<HTMLDivElement>(null);
+  const [careerForm, setCareerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    coverLetter: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [activeJobs, setActiveJobs] = useState<JobListing[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const actor = await createActorWithConfig();
+        const data = (await (actor as any).getActiveJobs()) as JobListing[];
+        setActiveJobs(data);
+      } catch {
+        // silently fail — show empty state
+      } finally {
+        setJobsLoading(false);
+      }
+    })();
+  }, []);
+
+  const jobs = activeJobs.filter((j) => !j.isInternship);
+  const internships = activeJobs.filter((j) => j.isInternship);
+
+  const scrollToForm = (position: string) => {
+    setCareerForm((prev) => ({ ...prev, position }));
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const handleCareerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const actor = await createActorWithConfig();
+      await (actor as any).submitCareerApplication(
+        careerForm.name,
+        careerForm.email,
+        careerForm.phone,
+        careerForm.position,
+        careerForm.coverLetter,
+      );
+      toast.success("Application submitted! We'll review it within 48 hours.");
+      setCareerForm({
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        coverLetter: "",
+      });
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const culturePoints = [
+    {
+      icon: Users,
+      title: "Team Environment",
+      desc: "We work together, support each other, and celebrate successes as a team.",
+    },
+    {
+      icon: Target,
+      title: "Core Values & Vision",
+      desc: "Integrity, empathy, and excellence guide everything we do. Our vision is to redefine recruitment by combining technology with a human touch.",
+    },
+    {
+      icon: Heart,
+      title: "Employee Wellbeing",
+      desc: "Mental health is a top priority. We provide resources, support, and flexibility to ensure our team feels balanced, motivated, and cared for.",
+    },
+    {
+      icon: MessageSquare,
+      title: "Open Feedback Culture",
+      desc: "Feedback flows both ways. Employees are encouraged to share ideas, concerns, and suggestions, helping us grow stronger together.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Benefits & Growth",
+      desc: "We offer competitive perks, learning opportunities, and a path for career advancement—because when our employees succeed, HireKra succeeds.",
+    },
+  ];
+
+  const processSteps = [
+    {
+      step: 1,
+      title: "Browse & Apply",
+      desc: "Find a role that fits and submit via the form below.",
+    },
+    {
+      step: 2,
+      title: "Initial Screening",
+      desc: "Our team reviews your application within 48 hours.",
+    },
+    {
+      step: 3,
+      title: "Interview Rounds",
+      desc: "1-2 rounds with the hiring team.",
+    },
+    {
+      step: 4,
+      title: "Offer & Onboarding",
+      desc: "Get your offer letter and join the HireKra family.",
+    },
+  ];
+
+  const SkeletonCard = () => (
+    <div className="bg-card border border-border rounded-2xl p-6 animate-pulse">
+      <div className="h-4 bg-muted rounded w-3/4 mb-3" />
+      <div className="h-3 bg-muted rounded w-1/3 mb-4" />
+      <div className="h-3 bg-muted rounded w-full mb-2" />
+      <div className="h-3 bg-muted rounded w-5/6 mb-5" />
+      <div className="flex gap-1.5 mb-5">
+        <div className="h-5 bg-muted rounded-full w-16" />
+        <div className="h-5 bg-muted rounded-full w-20" />
+      </div>
+      <div className="h-9 bg-muted rounded-full w-full" />
+    </div>
+  );
+
+  return (
+    <section id="careers" className="py-20 bg-background">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div ref={ref} className="section-fade-in">
+          <SectionHeader
+            badge="We're Hiring"
+            title="Join the HireKra Team"
+            subtitle="Be part of a fast-growing recruitment firm changing how India and the Middle East hires talent. Explore open roles below."
+          />
+
+          {/* Job Listings */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-extrabold text-foreground mb-2 flex items-center gap-2">
+              <Briefcase size={22} className="text-brand-blue" />
+              Current Openings
+            </h3>
+            <p className="text-muted-foreground mb-6 text-sm">
+              Full-time positions at HireKra
+            </p>
+            {jobsLoading ? (
+              <div className="grid md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((n) => (
+                  <SkeletonCard key={n} />
+                ))}
+              </div>
+            ) : jobs.length === 0 ? (
+              <div
+                data-ocid="careers.empty_state"
+                className="flex flex-col items-center justify-center py-12 bg-muted/30 rounded-2xl border border-border text-center"
+              >
+                <Briefcase size={28} className="text-muted-foreground mb-3" />
+                <p className="font-semibold text-foreground mb-1">
+                  No openings right now
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Check back soon — we're growing fast!
+                </p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-6">
+                {jobs.map((job, i) => (
+                  <div
+                    key={String(job.id)}
+                    data-ocid={`careers.item.${i + 1}`}
+                    className="bg-card border border-border rounded-2xl p-6 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 flex flex-col"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="font-bold text-foreground text-base leading-tight flex-1 pr-2">
+                        {job.title}
+                      </h4>
+                      <span className="text-xs font-semibold bg-brand-blue/10 text-brand-blue px-2 py-0.5 rounded-full whitespace-nowrap">
+                        {job.jobType}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-3">
+                      <MapPin size={12} />
+                      <span>{job.location}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4 flex-1">
+                      {job.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {job.skills.split(",").map((skill) => (
+                        <span
+                          key={skill.trim()}
+                          className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border"
+                        >
+                          {skill.trim()}
+                        </span>
+                      ))}
+                    </div>
+                    <Button
+                      data-ocid={`careers.primary_button.${i + 1}`}
+                      onClick={() => scrollToForm(job.title)}
+                      className="w-full bg-[#0A2E45] hover:bg-[#1E6FA8] text-white rounded-full font-semibold transition-colors"
+                    >
+                      Apply Now
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Internships */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-extrabold text-foreground mb-2 flex items-center gap-2">
+              <GraduationCap size={22} className="text-brand-blue" />
+              Internship Opportunities
+            </h3>
+            <p className="text-muted-foreground mb-6 text-sm">
+              Learn, grow, and kickstart your career with us
+            </p>
+            {jobsLoading ? (
+              <div className="grid md:grid-cols-2 gap-6">
+                {[1, 2].map((n) => (
+                  <SkeletonCard key={n} />
+                ))}
+              </div>
+            ) : internships.length === 0 ? (
+              <div
+                data-ocid="careers.internship.empty_state"
+                className="flex flex-col items-center justify-center py-12 bg-muted/30 rounded-2xl border border-border text-center"
+              >
+                <GraduationCap
+                  size={28}
+                  className="text-muted-foreground mb-3"
+                />
+                <p className="font-semibold text-foreground mb-1">
+                  No internships right now
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Check back soon — opportunities are coming!
+                </p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-6">
+                {internships.map((intern, i) => (
+                  <div
+                    key={String(intern.id)}
+                    data-ocid={`careers.internship.item.${i + 1}`}
+                    className="bg-card border border-border rounded-2xl p-6 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 flex flex-col"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="font-bold text-foreground text-base">
+                        {intern.title}
+                      </h4>
+                      <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                        Internship
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-3">
+                      {intern.duration && (
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} />
+                          {intern.duration}
+                        </span>
+                      )}
+                      {intern.stipend && (
+                        <span className="flex items-center gap-1">
+                          <Award size={12} />
+                          Stipend: {intern.stipend}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4 flex-1">
+                      {intern.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {intern.skills.split(",").map((skill) => (
+                        <span
+                          key={skill.trim()}
+                          className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border"
+                        >
+                          {skill.trim()}
+                        </span>
+                      ))}
+                    </div>
+                    <Button
+                      data-ocid={`careers.internship.primary_button.${i + 1}`}
+                      onClick={() => scrollToForm(intern.title)}
+                      variant="outline"
+                      className="w-full border-[#0A2E45] text-[#0A2E45] hover:bg-[#0A2E45] hover:text-white rounded-full font-semibold transition-colors"
+                    >
+                      Apply Now
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Company Culture */}
+          <div className="mb-16 bg-muted/50 rounded-3xl p-8 sm:p-10">
+            <h3 className="text-2xl font-extrabold text-foreground mb-2 flex items-center gap-2">
+              <Heart size={22} className="text-brand-blue" />
+              Our Culture
+            </h3>
+            <p className="text-muted-foreground mb-8 text-sm">
+              What it's like to work at HireKra
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {culturePoints.map((item) => (
+                <div key={item.title} className="flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shrink-0">
+                    <item.icon size={20} className="text-brand-blue" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-foreground text-sm mb-1">
+                      {item.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Application Process */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-extrabold text-foreground mb-2 flex items-center gap-2">
+              <CheckCircle size={22} className="text-brand-blue" />
+              Application Process
+            </h3>
+            <p className="text-muted-foreground mb-8 text-sm">
+              Simple, transparent, and candidate-friendly
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {processSteps.map((s) => (
+                <div
+                  key={s.step}
+                  className="flex flex-col items-center text-center"
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-sm mb-3 shrink-0"
+                    style={{
+                      background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
+                    }}
+                  >
+                    {s.step}
+                  </div>
+                  <h4 className="font-bold text-foreground text-sm mb-1">
+                    {s.title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {s.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Join Us Form */}
+          <div
+            ref={formRef}
+            id="careers-form"
+            className="bg-card border border-border rounded-3xl shadow-card p-8 sm:p-10"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center">
+                <FileText size={20} className="text-brand-blue" />
+              </div>
+              <div>
+                <h3 className="text-xl font-extrabold text-foreground">
+                  Quick Application
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Fill in your details and we'll get back to you within 48 hours
+                </p>
+              </div>
+            </div>
+            <form
+              onSubmit={handleCareerSubmit}
+              className="grid sm:grid-cols-2 gap-5"
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="career-name" className="text-sm font-semibold">
+                  Full Name *
+                </Label>
+                <Input
+                  id="career-name"
+                  data-ocid="careers.input"
+                  placeholder="Your full name"
+                  value={careerForm.name}
+                  onChange={(e) =>
+                    setCareerForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                  required
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="career-email" className="text-sm font-semibold">
+                  Email Address *
+                </Label>
+                <Input
+                  id="career-email"
+                  data-ocid="careers.input"
+                  type="email"
+                  placeholder="you@email.com"
+                  value={careerForm.email}
+                  onChange={(e) =>
+                    setCareerForm((p) => ({ ...p, email: e.target.value }))
+                  }
+                  required
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="career-phone" className="text-sm font-semibold">
+                  Phone Number *
+                </Label>
+                <Input
+                  id="career-phone"
+                  data-ocid="careers.input"
+                  type="tel"
+                  placeholder="+91 XXXXX XXXXX"
+                  value={careerForm.phone}
+                  onChange={(e) =>
+                    setCareerForm((p) => ({ ...p, phone: e.target.value }))
+                  }
+                  required
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="career-position"
+                  className="text-sm font-semibold"
+                >
+                  Position Applying For *
+                </Label>
+                <Input
+                  id="career-position"
+                  data-ocid="careers.input"
+                  placeholder="e.g. Senior Recruitment Consultant"
+                  value={careerForm.position}
+                  onChange={(e) =>
+                    setCareerForm((p) => ({ ...p, position: e.target.value }))
+                  }
+                  required
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-1.5">
+                <Label htmlFor="career-cover" className="text-sm font-semibold">
+                  Cover Letter / Message
+                </Label>
+                <Textarea
+                  id="career-cover"
+                  data-ocid="careers.textarea"
+                  placeholder="Tell us about yourself, your experience, and why you want to join HireKra..."
+                  value={careerForm.coverLetter}
+                  onChange={(e) =>
+                    setCareerForm((p) => ({
+                      ...p,
+                      coverLetter: e.target.value,
+                    }))
+                  }
+                  className="rounded-xl min-h-[120px] resize-none"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Button
+                  data-ocid="careers.submit_button"
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full bg-[#0A2E45] hover:bg-[#1E6FA8] text-white rounded-full py-6 font-bold text-base transition-colors"
+                >
+                  {submitting ? "Submitting..." : "Submit Application"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // --- Contact ---
 function Contact() {
   const ref = useFadeIn();
+  const { formSource, setFormSource } = useContext(FormSourceContext);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -1377,14 +2661,16 @@ function Contact() {
     setSubmitting(true);
     try {
       const actor = await createActorWithConfig();
-      await actor.submitForm(
+      await (actor as any).submitForm(
         form.name,
         form.email,
         form.company,
         form.hiringNeeds,
+        formSource || "Direct",
       );
       toast.success("Message sent! We'll be in touch within 24 hours.");
       setForm({ name: "", email: "", company: "", hiringNeeds: "" });
+      setFormSource("Direct");
     } catch {
       toast.error(
         "Something went wrong. Please try again or email us directly.",
@@ -1407,9 +2693,30 @@ function Contact() {
           <div className="grid lg:grid-cols-2 gap-10">
             {/* Form */}
             <div className="bg-card border border-border rounded-2xl shadow-card p-8">
-              <h3 className="font-bold text-lg text-foreground mb-6">
-                Send Us a Message
-              </h3>
+              <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+                <h3 className="font-bold text-lg text-foreground">
+                  Send Us a Message
+                </h3>
+                {formSource &&
+                  formSource !== "Direct" &&
+                  (() => {
+                    const badgeClass: Record<string, string> = {
+                      "Partner With Us":
+                        "bg-blue-100 text-blue-700 border-blue-200",
+                      "Book a Call":
+                        "bg-green-100 text-green-700 border-green-200",
+                      "Hire Now":
+                        "bg-orange-100 text-orange-700 border-orange-200",
+                    };
+                    return (
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${badgeClass[formSource] || "bg-gray-100 text-gray-600 border-gray-200"}`}
+                      >
+                        ✦ You're filling out: {formSource}
+                      </span>
+                    );
+                  })()}
+              </div>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <Label
@@ -1706,6 +3013,7 @@ function SectionHeader({
 // --- App ---
 export default function App() {
   const [hash, setHash] = useState(window.location.hash);
+  const [formSource, setFormSource] = useState("Direct");
 
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash);
@@ -1718,7 +3026,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <FormSourceContext.Provider value={{ formSource, setFormSource }}>
       <Toaster position="top-center" richColors />
       <Navbar />
       <main>
@@ -1730,9 +3038,10 @@ export default function App() {
         <Leadership />
         <WhyChoose />
         <ClientCTA />
+        <Careers />
         <Contact />
       </main>
       <Footer />
-    </>
+    </FormSourceContext.Provider>
   );
 }
