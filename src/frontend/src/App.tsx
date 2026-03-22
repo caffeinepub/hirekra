@@ -9,6 +9,7 @@ import {
   Briefcase,
   Building2,
   CalendarDays,
+  Check,
   CheckCircle,
   Clock,
   Coffee,
@@ -16,7 +17,9 @@ import {
   Globe,
   GraduationCap,
   Handshake,
+  Headphones,
   Heart,
+  Info,
   Lightbulb,
   Linkedin,
   Lock,
@@ -35,6 +38,7 @@ import {
   ToggleLeft,
   Trash2,
   TrendingUp,
+  Truck,
   UserCheck,
   Users,
   X,
@@ -1453,11 +1457,7 @@ function About() {
     <section id="about" className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div ref={ref} className="section-fade-in">
-          <SectionHeader
-            badge="Who We Are"
-            title="About HireKra"
-            subtitle="A fast-growing recruitment partner redefining talent acquisition across India and the Middle East."
-          />
+          <SectionHeader badge="Who We Are" title="About HireKra" />
 
           <div className="max-w-3xl mx-auto text-center mb-14">
             <p className="text-muted-foreground leading-relaxed text-base">
@@ -1677,11 +1677,10 @@ function Expertise() {
   ];
 
   const industries = [
-    { icon: <Building2 size={16} />, label: "Technology" },
-    { icon: <Building2 size={16} />, label: "BFSI" },
-    { icon: <Shield size={16} />, label: "Healthcare" },
-    { icon: <Briefcase size={16} />, label: "E-commerce" },
-    { icon: <TrendingUp size={16} />, label: "Startups" },
+    { icon: <Truck size={16} />, label: "Logistics" },
+    { icon: <Building2 size={16} />, label: "Real Estate" },
+    { icon: <Headphones size={16} />, label: "BPOs / Call Centers" },
+    { icon: <Globe size={16} />, label: "Others" },
   ];
 
   return (
@@ -1736,138 +1735,107 @@ function Expertise() {
   );
 }
 
-// --- Hiring Process ---
-function HiringProcess() {
+// --- Services Offered ---
+function ServicesOffered() {
   const ref = useFadeIn();
 
-  const steps = [
-    {
-      number: "01",
-      title: "Requirement Understanding",
-      desc: "We begin with an in-depth consultation to fully understand your hiring goals, team culture, and role specifications.",
-      icon: <MessageSquare size={22} />,
-    },
-    {
-      number: "02",
-      title: "Talent Sourcing",
-      desc: "Leveraging our extensive network and targeted search strategies to identify the best-fit candidates quickly.",
-      icon: <Users size={22} />,
-    },
-    {
-      number: "03",
-      title: "Screening & Shortlisting",
-      desc: "Rigorous evaluation of candidates through profile reviews, skill assessments, and preliminary interviews.",
-      icon: <UserCheck size={22} />,
-    },
-    {
-      number: "04",
-      title: "Interview Coordination",
-      desc: "Seamless scheduling and coordination of interviews between candidates and your hiring team.",
-      icon: <CheckCircle size={22} />,
-    },
-    {
-      number: "05",
-      title: "Offer & Closure",
-      desc: "Expert negotiation support and end-to-end offer management to ensure a smooth and successful closure.",
-      icon: <Award size={22} />,
-    },
+  const servicesList = [
+    "Candidate sourcing across multiple platforms",
+    "Screening and evaluation of candidates",
+    "Conducting preliminary interviews",
+    "Scheduling and coordinating all further rounds of client interviews",
+    "Providing timely feedback to candidates after interviews",
+    "Offer coordination and follow-ups until the candidate joins",
+    "Onboarding support and guidance for a smooth first day",
+    "Flexible support for client-specific recruitment processes",
   ];
 
   return (
-    <section id="process" className="py-20 bg-muted/50">
+    <section id="services" className="py-20 bg-muted/30">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div ref={ref} className="section-fade-in">
-          <SectionHeader
-            badge="How We Work"
-            title="Our Hiring Process"
-            subtitle="A streamlined, transparent, and proven 5-step process to get you the right hire — every time."
-          />
+          <SectionHeader badge="What We Do" title="Services Offered" />
+          <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-10 text-base leading-relaxed">
+            Hirekra provides end-to-end talent acquisition, managing the
+            complete recruitment process while keeping candidates engaged and
+            clients informed.
+          </p>
 
-          {/* Desktop: horizontal stepper */}
-          <div className="hidden md:block">
-            <div className="relative">
-              {/* Connector line */}
+          <div className="grid sm:grid-cols-2 gap-4 max-w-4xl mx-auto mb-8">
+            {servicesList.map((item) => (
               <div
-                className="absolute top-10 left-0 right-0 h-0.5 mx-16"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #1E6FA8 0%, #60C3F5 100%)",
-                  zIndex: 0,
-                }}
-              />
-              <div className="grid grid-cols-5 gap-4 relative z-10">
-                {steps.map((step, i) => (
-                  <div
-                    key={step.number}
-                    className="flex flex-col items-center text-center"
-                  >
-                    {/* Circle */}
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-5 shadow-lg"
-                      style={{
-                        background:
-                          i === 0
-                            ? "linear-gradient(135deg, #0A2E45, #1E6FA8)"
-                            : "white",
-                        border: i !== 0 ? "2px solid #1E6FA8" : "none",
-                        color: i === 0 ? "white" : "#1E6FA8",
-                      }}
-                    >
-                      {step.icon}
-                    </div>
-                    <span
-                      className="text-xs font-bold mb-1"
-                      style={{ color: "#1E6FA8" }}
-                    >
-                      STEP {step.number}
-                    </span>
-                    <h3 className="font-bold text-sm text-foreground mb-2 leading-snug">
-                      {step.title}
-                    </h3>
-                    <p className="text-muted-foreground text-xs leading-relaxed">
-                      {step.desc}
-                    </p>
-                  </div>
-                ))}
+                key={item}
+                className="flex items-start gap-3 bg-card border border-border rounded-xl p-4 shadow-sm"
+              >
+                <span className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-brand-blue/15 flex items-center justify-center">
+                  <Check size={12} className="text-brand-blue" />
+                </span>
+                <span className="text-sm text-foreground leading-relaxed">
+                  {item}
+                </span>
               </div>
+            ))}
+          </div>
+
+          <div className="max-w-4xl mx-auto mb-8">
+            <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
+              <Info
+                size={18}
+                className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+              />
+              <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
+                <strong>Note:</strong> HireKra does not handle payroll, work
+                permits, visas, or legal compliance.
+              </p>
             </div>
           </div>
 
-          {/* Mobile: vertical list */}
-          <div className="md:hidden flex flex-col gap-4">
-            {steps.map((step, i) => (
-              <div
-                key={step.number}
-                className="flex gap-4 bg-card border border-border rounded-2xl p-6 shadow-card"
-              >
-                {/* Left: number + line */}
-                <div className="flex flex-col items-center shrink-0">
-                  <div
-                    className="w-11 h-11 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow"
-                    style={{
-                      background: "linear-gradient(135deg, #0A2E45, #1E6FA8)",
-                    }}
-                  >
-                    {step.number}
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div
-                      className="w-0.5 flex-1 mt-2 min-h-6"
-                      style={{ background: "#1E6FA8", opacity: 0.3 }}
-                    />
-                  )}
-                </div>
-                {/* Content */}
-                <div className="pt-1">
-                  <h3 className="font-bold text-sm text-foreground mb-1">
-                    {step.title}
-                  </h3>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    {step.desc}
-                  </p>
-                </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-6">
+            <div className="bg-card border border-border rounded-2xl p-7 shadow-card">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 size={20} className="text-brand-blue" />
+                <h3 className="font-bold text-base text-foreground">
+                  Our Clients
+                </h3>
               </div>
-            ))}
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                We serve Middle East companies in BPO/Call Centers, Logistics,
+                and Real Estate. Hirekra specializes in non-tech white-collar
+                roles and provides end-to-end recruitment solutions, tailored to
+                each client's process for seamless and high-quality hiring
+                outcomes.
+              </p>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-7 shadow-card">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin size={20} className="text-brand-blue" />
+                <h3 className="font-bold text-base text-foreground">
+                  Geographic Focus
+                </h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Hirekra primarily serves companies across the Middle East,
+                including the UAE, Saudi Arabia, Qatar, and Oman. Our deep
+                understanding of regional markets allows us to deliver tailored,
+                end-to-end recruitment solutions.
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-brand-blue to-blue-700 rounded-2xl p-7 text-white">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe size={20} className="text-white/80" />
+                <h3 className="font-bold text-base text-white">
+                  Global Expansion
+                </h3>
+              </div>
+              <p className="text-sm text-white/90 leading-relaxed">
+                We plan to expand our services globally in the future, bringing
+                the same people-first, thoughtful recruitment approach to
+                clients worldwide.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1882,7 +1850,7 @@ function Leadership() {
   const leaders = [
     {
       name: "Kratika Haldwani",
-      role: "Director",
+      role: "Founder and CEO",
       linkedin: "https://www.linkedin.com/in/kratikahaldwani",
       bio: "Kratika Haldwani leads Hirekra with passion and purpose. She believes that the right people are the backbone of every successful organization and is committed to connecting clients with talent that drives results. With experience in end-to-end recruitment for global organizations, she fosters calm, focused teams that deliver exceptional outcomes while keeping client success at the center.",
     },
@@ -1894,7 +1862,7 @@ function Leadership() {
     {
       name: "Vansh Gupta",
       role: "Head of Operations",
-      bio: "Driving operations, client partnerships, and scaling. Vansh is focused on building strong hiring pipelines and execution excellence — ensuring every client engagement delivers measurable outcomes and long-term hiring success.",
+      bio: "Vansh brings strategic vision, operational excellence, and a strong focus on execution. As Head of Operations, he ensures that every recruitment process runs efficiently, seamlessly, and with a results-driven approach. He oversees daily operations, streamlines workflows, and maintains high performance across the team. With a commitment to quality, accountability, and continuous improvement, Vansh plays a key role in building scalable systems and delivering consistent outcomes for clients. His leadership supports HireKra's mission to provide reliable, fast, and people-first talent solutions while maintaining strong internal culture and operational discipline.",
     },
   ];
 
@@ -2849,6 +2817,18 @@ function Contact() {
                       <p className="font-semibold">+91 85870 79103</p>
                     </div>
                   </a>
+                  <a
+                    href="tel:+919783004914"
+                    className="flex items-center gap-4 group"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center group-hover:bg-white/25 transition-colors">
+                      <Phone size={18} />
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-xs">Mobile</p>
+                      <p className="font-semibold">+91 97830 04914</p>
+                    </div>
+                  </a>
                   <div className="flex items-center gap-4">
                     <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center">
                       <MapPin size={18} />
@@ -3004,7 +2984,7 @@ function SectionHeader({
 }: {
   badge: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
 }) {
   return (
     <div className="text-center mb-12">
@@ -3017,9 +2997,11 @@ function SectionHeader({
       <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
         {title}
       </h2>
-      <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
-        {subtitle}
-      </p>
+      {subtitle && (
+        <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
+          {subtitle}
+        </p>
+      )}
     </div>
   );
 }
@@ -3048,7 +3030,7 @@ export default function App() {
         <About />
         <Presence />
         <Expertise />
-        <HiringProcess />
+        <ServicesOffered />
         <Leadership />
         <WhyChoose />
         <ClientCTA />
