@@ -1382,8 +1382,9 @@ function Hero() {
         </h1>
 
         <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10 font-medium">
-          Your specialist recruitment partner across India &amp; the Middle East
-          — delivering the right talent, at the right time, every time.
+          Your specialist Talent Acquisition partner across India &amp; the
+          Middle East — delivering the right talent, at the right time, every
+          time.
         </p>
 
         {/* Highlight badges */}
@@ -1460,13 +1461,12 @@ function About() {
 
           <div className="max-w-3xl mx-auto text-center mb-14">
             <p className="text-muted-foreground leading-relaxed text-base">
-              HireKra is a fast-growing talent acquisition firm helping
-              businesses scale with the right talent across India and the Middle
-              East.
-            </p>
-            <p className="text-muted-foreground leading-relaxed text-base mt-4">
-              We specialize in Non-IT Contract And Permanent Staffing, Niche
-              Hiring and bulk hiring solutions with speed and precision.
+              HIREKRA Private Limited is a global talent acquisition partner
+              based in Mumbai, India, helping companies across the Middle East
+              and beyond build teams that think clearly, work calmly, and
+              deliver results that matter. We connect top talent with
+              forward-thinking companies, all while keeping quality, integrity,
+              and well-being at the heart of everything we do.
             </p>
           </div>
 
@@ -1498,9 +1498,14 @@ function About() {
                     Our Vision
                   </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    To become a trusted global hiring partner — renowned for
-                    integrity, innovation, and the ability to match the right
-                    talent with the right opportunity.
+                    Our vision is to become a trusted global talent acquisition
+                    partner, connecting organizations with the right and
+                    empowered individuals who drive meaningful growth and
+                    long-term success. We are committed to building a
+                    people-first culture that values clarity, well-being, and
+                    thoughtful hiring, enabling our teams to work with focused
+                    and calm minds while supporting businesses across
+                    international markets.
                   </p>
                 </div>
               </div>
@@ -1876,17 +1881,19 @@ function Leadership() {
 
   const leaders = [
     {
-      name: "Kratika",
-      role: "Founder & CEO",
-      img: "/assets/uploads/IMG_0932-1.jpeg",
+      name: "Kratika Haldwani",
+      role: "Director",
       linkedin: "https://www.linkedin.com/in/kratikahaldwani",
-      bio: "Visionary behind HireKra with deep expertise in talent acquisition and business growth. Kratika founded HireKra with a mission to transform how companies build their teams — combining intuition, data, and a human-first approach to recruitment.",
+      bio: "Kratika Haldwani leads Hirekra with passion and purpose. She believes that the right people are the backbone of every successful organization and is committed to connecting clients with talent that drives results. With experience in end-to-end recruitment for global organizations, she fosters calm, focused teams that deliver exceptional outcomes while keeping client success at the center.",
+    },
+    {
+      name: "Usha",
+      role: "Director",
+      bio: "Usha brings experience, insight, and a deep commitment to client trust. She ensures every recruitment process is transparent, smooth, and client-focused, keeping clients informed at every step. By fostering confidence and strong partnerships, she supports Hirekra's mission to deliver exceptional talent solutions with clarity, integrity, and a people-first approach.",
     },
     {
       name: "Vansh Gupta",
-      role: "Co-Founder & Head of Operations",
-      img: "/assets/uploads/IMG_0023-2.jpeg",
-      linkedin: "https://www.linkedin.com/in/vansh-gupta-647686166",
+      role: "Head of Operations",
       bio: "Driving operations, client partnerships, and scaling. Vansh is focused on building strong hiring pipelines and execution excellence — ensuring every client engagement delivers measurable outcomes and long-term hiring success.",
     },
   ];
@@ -1901,19 +1908,24 @@ function Leadership() {
             subtitle="The passionate minds driving HireKra's mission to transform talent acquisition."
           />
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {leaders.map((l, i) => (
               <div
                 data-ocid={`leadership.card.${i + 1}`}
                 key={l.name}
                 className="bg-card border border-border rounded-2xl shadow-card overflow-hidden"
               >
-                <div className="aspect-square overflow-hidden bg-muted">
-                  <img
-                    src={l.img}
-                    alt={`${l.name} - ${l.role}`}
-                    className="w-full h-full object-cover object-center"
-                  />
+                <div className="flex items-center justify-center py-10 bg-gradient-to-br from-blue-600 to-blue-900">
+                  <div className="w-28 h-28 rounded-full bg-white/20 border-4 border-white/30 flex items-center justify-center shadow-lg">
+                    <span className="text-4xl font-extrabold text-white tracking-wide select-none">
+                      {l.name
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <div className="p-7">
                   <div className="flex items-start justify-between mb-3">
@@ -1925,15 +1937,17 @@ function Leadership() {
                         {l.role}
                       </span>
                     </div>
-                    <a
-                      href={l.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${l.name} on LinkedIn`}
-                      className="w-10 h-10 rounded-xl bg-[#0077B5]/10 hover:bg-[#0077B5] flex items-center justify-center text-[#0077B5] hover:text-white transition-all duration-200"
-                    >
-                      <Linkedin size={18} />
-                    </a>
+                    {l.linkedin && (
+                      <a
+                        href={l.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${l.name} on LinkedIn`}
+                        className="w-10 h-10 rounded-xl bg-[#0077B5]/10 hover:bg-[#0077B5] flex items-center justify-center text-[#0077B5] hover:text-white transition-all duration-200"
+                      >
+                        <Linkedin size={18} />
+                      </a>
+                    )}
                   </div>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {l.bio}
