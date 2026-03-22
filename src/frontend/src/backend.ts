@@ -9,24 +9,14 @@
 import { Actor, HttpAgent, type HttpAgentOptions, type ActorConfig, type Agent, type ActorSubclass } from "@icp-sdk/core/agent";
 import type { Principal } from "@icp-sdk/core/principal";
 import { idlFactory, type _SERVICE } from "./declarations/backend.did";
-export interface Some<T> {
-    __kind__: "Some";
-    value: T;
-}
-export interface None {
-    __kind__: "None";
-}
+export interface Some<T> { __kind__: "Some"; value: T; }
+export interface None { __kind__: "None"; }
 export type Option<T> = Some<T> | None;
 function some<T>(value: T): Some<T> {
-    return {
-        __kind__: "Some",
-        value: value
-    };
+    return { __kind__: "Some", value: value };
 }
 function none(): None {
-    return {
-        __kind__: "None"
-    };
+    return { __kind__: "None" };
 }
 function isNone<T>(option: Option<T>): option is None {
     return option.__kind__ === "None";
@@ -35,19 +25,11 @@ function isSome<T>(option: Option<T>): option is Some<T> {
     return option.__kind__ === "Some";
 }
 function unwrap<T>(option: Option<T>): T {
-    if (isNone(option)) {
-        throw new Error("unwrap: none");
-    }
+    if (isNone(option)) { throw new Error("unwrap: none"); }
     return option.value;
 }
-function candid_some<T>(value: T): [T] {
-    return [
-        value
-    ];
-}
-function candid_none<T>(): [] {
-    return [];
-}
+function candid_some<T>(value: T): [T] { return [value]; }
+function candid_none<T>(): [] { return []; }
 function record_opt_to_undefined<T>(arg: T | null): T | undefined {
     return arg == null ? undefined : arg;
 }
@@ -56,34 +38,24 @@ export class ExternalBlob {
     directURL: string;
     onProgress?: (percentage: number) => void = undefined;
     private constructor(directURL: string, blob: Uint8Array<ArrayBuffer> | null){
-        if (blob) {
-            this._blob = blob;
-        }
+        if (blob) { this._blob = blob; }
         this.directURL = directURL;
     }
     static fromURL(url: string): ExternalBlob {
         return new ExternalBlob(url, null);
     }
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob {
-        const url = URL.createObjectURL(new Blob([
-            new Uint8Array(blob)
-        ], {
-            type: 'application/octet-stream'
-        }));
+        const url = URL.createObjectURL(new Blob([new Uint8Array(blob)], { type: 'application/octet-stream' }));
         return new ExternalBlob(url, blob);
     }
     public async getBytes(): Promise<Uint8Array<ArrayBuffer>> {
-        if (this._blob) {
-            return this._blob;
-        }
+        if (this._blob) { return this._blob; }
         const response = await fetch(this.directURL);
         const blob = await response.blob();
         this._blob = new Uint8Array(await blob.arrayBuffer());
         return this._blob;
     }
-    public getDirectURL(): string {
-        return this.directURL;
-    }
+    public getDirectURL(): string { return this.directURL; }
     public withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob {
         this.onProgress = onProgress;
         return this;
@@ -96,55 +68,93 @@ export interface Submission {
     company: string;
     timestamp: bigint;
     hiringNeeds: string;
+    formSource: string;
+}
+export interface CareerApplication {
+    id: bigint;
+    name: string;
+    email: string;
+    phone: string;
+    position: string;
+    coverLetter: string;
+    timestamp: bigint;
+}
+export interface JobListing {
+    id: bigint;
+    title: string;
+    jobType: string;
+    location: string;
+    description: string;
+    skills: string;
+    isInternship: boolean;
+    duration: string;
+    stipend: string;
+    isActive: boolean;
+    createdAt: bigint;
 }
 export interface backendInterface {
     clearSubmissions(password: string): Promise<void>;
     getAllSubmissions(password: string): Promise<Array<Submission>>;
-    submitForm(name: string, email: string, company: string, hiringNeeds: string): Promise<bigint>;
+    getAllCareerApplications(password: string): Promise<Array<CareerApplication>>;
+    getAllJobListings(password: string): Promise<Array<JobListing>>;
+    getActiveJobs(): Promise<Array<JobListing>>;
+    submitForm(name: string, email: string, company: string, hiringNeeds: string, formSource: string): Promise<bigint>;
+    submitCareerApplication(name: string, email: string, phone: string, position: string, coverLetter: string): Promise<bigint>;
+    createJobListing(password: string, title: string, jobType: string, location: string, description: string, skills: string, isInternship: boolean, duration: string, stipend: string): Promise<bigint>;
+    toggleJobActive(password: string, jobId: bigint): Promise<boolean>;
+    deleteJobListing(password: string, jobId: bigint): Promise<void>;
 }
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async clearSubmissions(arg0: string): Promise<void> {
         if (this.processError) {
-            try {
-                const result = await this.actor.clearSubmissions(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.clearSubmissions(arg0);
-            return result;
-        }
+            try { return await this.actor.clearSubmissions(arg0); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.clearSubmissions(arg0); }
     }
     async getAllSubmissions(arg0: string): Promise<Array<Submission>> {
         if (this.processError) {
-            try {
-                const result = await this.actor.getAllSubmissions(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllSubmissions(arg0);
-            return result;
-        }
+            try { return await this.actor.getAllSubmissions(arg0); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.getAllSubmissions(arg0); }
     }
-    async submitForm(arg0: string, arg1: string, arg2: string, arg3: string): Promise<bigint> {
+    async getAllCareerApplications(arg0: string): Promise<Array<CareerApplication>> {
         if (this.processError) {
-            try {
-                const result = await this.actor.submitForm(arg0, arg1, arg2, arg3);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.submitForm(arg0, arg1, arg2, arg3);
-            return result;
-        }
+            try { return await this.actor.getAllCareerApplications(arg0); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.getAllCareerApplications(arg0); }
+    }
+    async getAllJobListings(arg0: string): Promise<Array<JobListing>> {
+        if (this.processError) {
+            try { return await this.actor.getAllJobListings(arg0); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.getAllJobListings(arg0); }
+    }
+    async getActiveJobs(): Promise<Array<JobListing>> {
+        if (this.processError) {
+            try { return await this.actor.getActiveJobs(); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.getActiveJobs(); }
+    }
+    async submitForm(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string): Promise<bigint> {
+        if (this.processError) {
+            try { return await this.actor.submitForm(arg0, arg1, arg2, arg3, arg4); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.submitForm(arg0, arg1, arg2, arg3, arg4); }
+    }
+    async submitCareerApplication(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string): Promise<bigint> {
+        if (this.processError) {
+            try { return await this.actor.submitCareerApplication(arg0, arg1, arg2, arg3, arg4); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.submitCareerApplication(arg0, arg1, arg2, arg3, arg4); }
+    }
+    async createJobListing(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: boolean, arg7: string, arg8: string): Promise<bigint> {
+        if (this.processError) {
+            try { return await this.actor.createJobListing(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.createJobListing(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); }
+    }
+    async toggleJobActive(arg0: string, arg1: bigint): Promise<boolean> {
+        if (this.processError) {
+            try { return await this.actor.toggleJobActive(arg0, arg1); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.toggleJobActive(arg0, arg1); }
+    }
+    async deleteJobListing(arg0: string, arg1: bigint): Promise<void> {
+        if (this.processError) {
+            try { return await this.actor.deleteJobListing(arg0, arg1); } catch (e) { this.processError(e); throw new Error("unreachable"); }
+        } else { return await this.actor.deleteJobListing(arg0, arg1); }
     }
 }
 export interface CreateActorOptions {
@@ -154,9 +164,7 @@ export interface CreateActorOptions {
     processError?: (error: unknown) => never;
 }
 export function createActor(canisterId: string, _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, options: CreateActorOptions = {}): Backend {
-    const agent = options.agent || HttpAgent.createSync({
-        ...options.agentOptions
-    });
+    const agent = options.agent || HttpAgent.createSync({ ...options.agentOptions });
     if (options.agent && options.agentOptions) {
         console.warn("Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent.");
     }

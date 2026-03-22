@@ -15,16 +15,56 @@ export const Submission = IDL.Record({
   'company' : IDL.Text,
   'timestamp' : IDL.Int,
   'hiringNeeds' : IDL.Text,
+  'formSource' : IDL.Text,
+});
+
+export const CareerApplication = IDL.Record({
+  'id' : IDL.Nat,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+  'phone' : IDL.Text,
+  'position' : IDL.Text,
+  'coverLetter' : IDL.Text,
+  'timestamp' : IDL.Int,
+});
+
+export const JobListing = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'jobType' : IDL.Text,
+  'location' : IDL.Text,
+  'description' : IDL.Text,
+  'skills' : IDL.Text,
+  'isInternship' : IDL.Bool,
+  'duration' : IDL.Text,
+  'stipend' : IDL.Text,
+  'isActive' : IDL.Bool,
+  'createdAt' : IDL.Int,
 });
 
 export const idlService = IDL.Service({
   'clearSubmissions' : IDL.Func([IDL.Text], [], []),
   'getAllSubmissions' : IDL.Func([IDL.Text], [IDL.Vec(Submission)], ['query']),
+  'getAllCareerApplications' : IDL.Func([IDL.Text], [IDL.Vec(CareerApplication)], ['query']),
+  'getAllJobListings' : IDL.Func([IDL.Text], [IDL.Vec(JobListing)], ['query']),
+  'getActiveJobs' : IDL.Func([], [IDL.Vec(JobListing)], ['query']),
   'submitForm' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
       [IDL.Nat],
       [],
     ),
+  'submitCareerApplication' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+  'createJobListing' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Bool, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+  'toggleJobActive' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+  'deleteJobListing' : IDL.Func([IDL.Text, IDL.Nat], [], []),
 });
 
 export const idlInitArgs = [];
@@ -37,8 +77,30 @@ export const idlFactory = ({ IDL }) => {
     'company' : IDL.Text,
     'timestamp' : IDL.Int,
     'hiringNeeds' : IDL.Text,
+    'formSource' : IDL.Text,
   });
-  
+  const CareerApplication = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'phone' : IDL.Text,
+    'position' : IDL.Text,
+    'coverLetter' : IDL.Text,
+    'timestamp' : IDL.Int,
+  });
+  const JobListing = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'jobType' : IDL.Text,
+    'location' : IDL.Text,
+    'description' : IDL.Text,
+    'skills' : IDL.Text,
+    'isInternship' : IDL.Bool,
+    'duration' : IDL.Text,
+    'stipend' : IDL.Text,
+    'isActive' : IDL.Bool,
+    'createdAt' : IDL.Int,
+  });
   return IDL.Service({
     'clearSubmissions' : IDL.Func([IDL.Text], [], []),
     'getAllSubmissions' : IDL.Func(
@@ -46,11 +108,38 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Submission)],
         ['query'],
       ),
+    'getAllCareerApplications' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(CareerApplication)],
+        ['query'],
+      ),
+    'getAllJobListings' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(JobListing)],
+        ['query'],
+      ),
+    'getActiveJobs' : IDL.Func(
+        [],
+        [IDL.Vec(JobListing)],
+        ['query'],
+      ),
     'submitForm' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Nat],
         [],
       ),
+    'submitCareerApplication' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'createJobListing' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Bool, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'toggleJobActive' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+    'deleteJobListing' : IDL.Func([IDL.Text, IDL.Nat], [], []),
   });
 };
 

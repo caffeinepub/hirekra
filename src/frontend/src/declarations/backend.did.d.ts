@@ -8,7 +8,6 @@
 
 import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
-import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Submission {
   'id' : bigint,
@@ -17,13 +16,41 @@ export interface Submission {
   'company' : string,
   'timestamp' : bigint,
   'hiringNeeds' : string,
+  'formSource' : string,
+}
+export interface CareerApplication {
+  'id' : bigint,
+  'name' : string,
+  'email' : string,
+  'phone' : string,
+  'position' : string,
+  'coverLetter' : string,
+  'timestamp' : bigint,
+}
+export interface JobListing {
+  'id' : bigint,
+  'title' : string,
+  'jobType' : string,
+  'location' : string,
+  'description' : string,
+  'skills' : string,
+  'isInternship' : boolean,
+  'duration' : string,
+  'stipend' : string,
+  'isActive' : boolean,
+  'createdAt' : bigint,
 }
 export interface _SERVICE {
   'clearSubmissions' : ActorMethod<[string], undefined>,
   'getAllSubmissions' : ActorMethod<[string], Array<Submission>>,
-  'submitForm' : ActorMethod<[string, string, string, string], bigint>,
+  'getAllCareerApplications' : ActorMethod<[string], Array<CareerApplication>>,
+  'getAllJobListings' : ActorMethod<[string], Array<JobListing>>,
+  'getActiveJobs' : ActorMethod<[], Array<JobListing>>,
+  'submitForm' : ActorMethod<[string, string, string, string, string], bigint>,
+  'submitCareerApplication' : ActorMethod<[string, string, string, string, string], bigint>,
+  'createJobListing' : ActorMethod<[string, string, string, string, string, string, boolean, string, string], bigint>,
+  'toggleJobActive' : ActorMethod<[string, bigint], boolean>,
+  'deleteJobListing' : ActorMethod<[string, bigint], undefined>,
 }
-export declare const idlService: IDL.ServiceClass;
-export declare const idlInitArgs: IDL.Type[];
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];
