@@ -1849,20 +1849,20 @@ function Leadership() {
 
   const leaders = [
     {
-      name: "Kratika Haldwani",
-      role: "Founder and CEO",
-      linkedin: "https://www.linkedin.com/in/kratikahaldwani",
-      bio: "Kratika Haldwani leads Hirekra with passion and purpose. She believes that the right people are the backbone of every successful organization and is committed to connecting clients with talent that drives results. With experience in end-to-end recruitment for global organizations, she fosters calm, focused teams that deliver exceptional outcomes while keeping client success at the center.",
+      name: "Usha",
+      role: "Managing Director",
+      bio: "Usha brings extensive experience, strategic insight, and an unwavering commitment to client trust. As Managing Director, she ensures that every recruitment process at HireKra is transparent, seamless, and client-focused, keeping partners informed at every step. By fostering confidence and building strong, long-term relationships, she drives HireKra's mission to deliver exceptional talent solutions with clarity, integrity, and a people-first approach.",
     },
     {
-      name: "Usha",
-      role: "Director",
-      bio: "Usha brings experience, insight, and a deep commitment to client trust. She ensures every recruitment process is transparent, smooth, and client-focused, keeping clients informed at every step. By fostering confidence and strong partnerships, she supports Hirekra's mission to deliver exceptional talent solutions with clarity, integrity, and a people-first approach.",
+      name: "Kratika Haldwani",
+      role: "Founder & CEO",
+      linkedin: "https://www.linkedin.com/in/kratikahaldwani",
+      bio: "Kratika Haldwani leads HireKra with passion and purpose. She believes that the right people are the backbone of every successful organization and is committed to connecting clients with talent that drives results. With experience in end-to-end recruitment for global organizations, she fosters calm, focused teams that deliver exceptional outcomes while keeping client success at the center.",
     },
     {
       name: "Vansh Gupta",
-      role: "Head of Operations",
-      bio: "Vansh brings strategic vision, operational excellence, and a strong focus on execution. As Head of Operations, he ensures that every recruitment process runs efficiently, seamlessly, and with a results-driven approach. He oversees daily operations, streamlines workflows, and maintains high performance across the team. With a commitment to quality, accountability, and continuous improvement, Vansh plays a key role in building scalable systems and delivering consistent outcomes for clients. His leadership supports HireKra's mission to provide reliable, fast, and people-first talent solutions while maintaining strong internal culture and operational discipline.",
+      role: "Business Leader | Operations & Client Success",
+      bio: "Vansh brings strategic vision, operational excellence, and a strong focus on execution to HireKra. As Business Leader | Operations & Client Success, he ensures every recruitment process runs efficiently and delivers results. He oversees daily operations, streamlines workflows, and drives high performance across the team. Committed to quality, accountability, and continuous improvement, Vansh builds scalable systems and ensures consistent outcomes for clients. His leadership strengthens HireKra's mission to provide fast, reliable, and people-first talent solutions while fostering a strong internal culture and operational discipline.",
     },
   ];
 
